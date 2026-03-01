@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>화식·먹이 가이드 — 테베리디</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fffdf9;
+    --surface: #ffffff;
+    --border: #ede8e0;
+    --border-active: #2d6a4f;
+    --text: #1c1a17;
+    --text-muted: #6b6458;
+    --text-dim: #a89e92;
+    --green: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #d8f3dc;
+    --orange: #e07b39;
+    --orange-pale: #fdebd0;
+    --red: #c0392b;
+    --red-pale: #fdecea;
+    --yellow: #f4c542;
+    --yellow-pale: #fef9e7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.8;
+    padding-bottom: 80px;
+  }
+
+  nav {
+    position: sticky;
+    top: 0; z-index: 100;
+    background: rgba(255,253,249,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; color: var(--green); text-decoration: none; }
+  .nav-logo span { color: var(--text); }
+  .nav-back { font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--green); }
+
+  .page-header {
+    background: var(--green);
+    padding: 44px 24px;
+    text-align: center;
+  }
+
+  .page-header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    padding: 5px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .page-header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+  }
+
+  .page-header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.75);
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* 미신 박스 */
+  .myth-banner {
+    background: var(--text);
+    padding: 32px 24px;
+    text-align: center;
+  }
+
+  .myth-inner { max-width: 700px; margin: 0 auto; }
+
+  .myth-banner h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(18px, 3vw, 26px);
+    color: white;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+
+  .myth-banner h2 em { font-style: normal; color: #74c69d; }
+
+  .myth-banner p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.65);
+    line-height: 1.8;
+  }
+
+  .wrap { max-width: 860px; margin: 0 auto; padding: 48px 24px 0; }
+
+  /* 칼로리 계산기 */
+  .calculator {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 40px;
+  }
+
+  .calc-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--green);
+  }
+
+  .calc-desc { font-size: 14px; color: var(--text-muted); margin-bottom: 24px; }
+
+  .calc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .calc-field label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .calc-field input,
+  .calc-field select {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    outline: none;
+    background: white;
+    color: var(--text);
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+
+  .calc-field input:focus,
+  .calc-field select:focus { border-color: var(--border-active); }
+
+  .btn-calc {
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin-bottom: 20px;
+  }
+
+  .btn-calc:hover { background: var(--green-light); }
+
+  .calc-result {
+    display: none;
+    background: var(--green-pale);
+    border-radius: 10px;
+    padding: 20px 24px;
+  }
+
+  .calc-result.show { display: block; }
+
+  .result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    border-bottom: 1px solid #b7e4c7;
+    font-size: 15px;
+  }
+
+  .result-row:last-child { border-bottom: none; }
+  .result-row .label { color: var(--green); }
+  .result-row .value { font-weight: 500; color: var(--green); font-family: 'Noto Serif KR', serif; font-size: 17px; }
+
+  /* 섹션 */
+  .section { margin-bottom: 48px; }
+
+  .section-header {
+    margin-bottom: 24px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--green-pale);
+  }
+
+  .section-tag {
+    display: inline-block;
+    background: var(--green-pale);
+    color: var(--green);
+    padding: 4px 12px;
+    border-radius: 100px;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+
+  .section-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+
+  .section-desc { font-size: 15px; color: var(--text-muted); }
+
+  /* 비율 카드 */
+  .ratio-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+
+  .ratio-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  .ratio-num {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 32px;
+    font-weight: 600;
+    color: var(--green);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .ratio-label { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 6px; }
+  .ratio-examples { font-size: 12px; color: var(--text-muted); line-height: 1.6; }
+
+  /* 식품 그리드 */
+  .food-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .food-card {
+    border-radius: 10px;
+    padding: 16px 18px;
+    border: 1px solid;
+  }
+
+  .food-card.safe {
+    background: #f0faf3;
+    border-color: #b7e4c7;
+  }
+
+  .food-card.caution {
+    background: var(--yellow-pale);
+    border-color: #f4d99a;
+  }
+
+  .food-card.danger {
+    background: var(--red-pale);
+    border-color: #f5b7b1;
+  }
+
+  .food-card-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .food-icon { font-size: 20px; }
+
+  .food-name {
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .food-card.safe .food-name    { color: var(--green); }
+  .food-card.caution .food-name { color: #92640a; }
+  .food-card.danger .food-name  { color: var(--red); }
+
+  .food-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* 식단 예시 */
+  .meal-example {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+
+  .meal-header {
+    background: var(--green-pale);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .meal-title { font-size: 15px; font-weight: 500; color: var(--green); }
+  .meal-weight { font-size: 13px; color: var(--green-light); }
+
+  .meal-body { padding: 16px 20px; }
+
+  .meal-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .meal-row:last-child { border-bottom: none; }
+  .meal-ingredient { color: var(--text); }
+  .meal-amount { font-weight: 500; color: var(--green); white-space: nowrap; }
+
+  .meal-total {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 20px;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* 보충제 */
+  .supplement-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+
+  .supplement-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 18px;
+  }
+
+  .supplement-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+
+  .supplement-why { font-size: 13px; color: var(--green); margin-bottom: 6px; }
+  .supplement-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* 팁 박스 */
+  .tip-box {
+    background: var(--green-pale);
+    border: 1px solid #b7e4c7;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--green);
+    line-height: 1.7;
+  }
+
+  .warn-box {
+    background: var(--orange-pale);
+    border: 1px solid #f4c08a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: #9a4f10;
+    line-height: 1.7;
+  }
+
+  @media (max-width: 600px) {
+    .ratio-cards { grid-template-columns: 1fr 1fr 1fr; }
+    .ratio-num { font-size: 24px; }
+    .food-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">테베리<span>디</span></a>
+  <a href="index.html" class="nav-back">← 홈으로</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-badge">🥗 먹이 정보</div>
+  <h1>화식 · 먹이 가이드</h1>
+  <p>
+    "사람 음식 주면 큰일나요"는 근거 없는 겁주기입니다.<br>
+    독성 성분만 피하면 화식은 충분히 가능합니다.
+  </p>
+</div>
+
+<!-- 미신 타파 -->
+<div class="myth-banner">
+  <div class="myth-inner">
+    <h2>"화식하면 <em>오래 못 산다</em>"는<br>근거가 없습니다.</h2>
+    <p>
+      수의사들이 화식을 말리는 이유는 두 가지입니다.<br>
+      하나는 진짜 우려 — 영양 불균형으로 잘못 줄 수 있다는 것.<br>
+      다른 하나는 이해관계 — 병원에서 파는 처방식 사료를 못 팔게 되기 때문.<br><br>
+      우리는 화식을 제대로 하는 방법을 알려드립니다.
+    </p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 칼로리 계산기 -->
+  <div class="calculator">
+    <div class="calc-title">🔢 하루 권장 칼로리 계산기</div>
+    <div class="calc-desc">반려동물의 정보를 입력하면 하루 필요 칼로리를 계산해드립니다</div>
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>체중 (kg)</label>
+        <input type="number" id="calcWeight" placeholder="예: 5.2" step="0.1" min="0.1">
+      </div>
+      <div class="calc-field">
+        <label>나이</label>
+        <select id="calcAge">
+          <option value="puppy">강아지/새끼 (1세 미만)</option>
+          <option value="adult" selected>성견/성묘 (1~7세)</option>
+          <option value="senior">노령 (7세 이상)</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>활동량</label>
+        <select id="calcActivity">
+          <option value="0.8">적음 (주로 실내)</option>
+          <option value="1.0" selected>보통</option>
+          <option value="1.2">많음 (활발한 운동)</option>
+        </select>
+      </div>
+      <div class="calc-field">
+        <label>중성화 여부</label>
+        <select id="calcNeutered">
+          <option value="0.9">중성화 함</option>
+          <option value="1.0" selected>중성화 안 함</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-calc" onclick="calcCalories()">칼로리 계산하기</button>
+    <div class="calc-result" id="calcResult">
+      <div class="result-row">
+        <span class="label">하루 권장 칼로리</span>
+        <span class="value" id="rKcal">—</span>
+      </div>
+      <div class="result-row">
+        <span class="label">하루 단백질 (40%)</span>
+        <span class="value" id="rProtein">—</span>
+      </div>
+      <div class="result-row">
+        <span class="label">하루 지방 (30%)</span>
+        <span class="value" id="rFat">—</span>
+      </div>
+      <div class="result-row">
+        <span class="label">하루 탄수화물 (30%)</span>
+        <span class="value" id="rCarb">—</span>
+      </div>
+      <div class="result-row">
+        <span class="label">닭가슴살 기준 단백질량</span>
+        <span class="value" id="rChicken">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 탄단지 비율 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">📊 영양 비율</div>
+      <div class="section-title">화식 탄단지 기준</div>
+      <div class="section-desc">강아지 기준. 고양이는 단백질 50%, 지방 40%, 탄수화물 10% 이하.</div>
+    </div>
+
+    <div class="ratio-cards">
+      <div class="ratio-card">
+        <div class="ratio-num">40%</div>
+        <div class="ratio-label">단백질</div>
+        <div class="ratio-examples">닭/소/돼지/연어<br>계란, 두부</div>
+      </div>
+      <div class="ratio-card">
+        <div class="ratio-num">30%</div>
+        <div class="ratio-label">지방</div>
+        <div class="ratio-examples">고기 자체 지방<br>연어오일, 계란</div>
+      </div>
+      <div class="ratio-card">
+        <div class="ratio-num">30%</div>
+        <div class="ratio-label">탄수화물</div>
+        <div class="ratio-examples">고구마, 당근<br>브로콜리, 현미</div>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      💡 이 비율은 절대값이 아닙니다. 대략적인 가이드입니다.<br>
+      매 끼니를 정확히 맞추려 하지 말고, <strong>일주일 단위로 균형</strong>을 맞추세요.<br>
+      칼슘, 아연, 비타민D 등 미네랄은 화식만으로 부족할 수 있어 보충제를 고려하세요.
+    </div>
+  </div>
+
+  <!-- 먹어도 되는 것 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">✅ 먹어도 되는 것</div>
+      <div class="section-title">줘도 되는 식품들</div>
+      <div class="section-desc">이것들은 적당량이면 안전합니다. "사람 음식은 다 안 된다"는 말은 틀렸습니다.</div>
+    </div>
+    <div class="food-grid">
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🍗</span><span class="food-name">닭고기/오리고기</span></div>
+        <div class="food-desc">삶거나 구워서 뼈 없이. 가장 좋은 단백질원. 껍질은 지방 많아 소량만.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🐟</span><span class="food-name">연어/고등어</span></div>
+        <div class="food-desc">익혀서 가시 제거 후. 오메가3 풍부. 생연어는 기생충 위험으로 익혀서.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🥚</span><span class="food-name">계란</span></div>
+        <div class="food-desc">완숙 추천. 단백질+지방 균형. 흰자만 날것으로 많이 주면 비오틴 결핍 가능.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🍠</span><span class="food-name">고구마</span></div>
+        <div class="food-desc">삶거나 쪄서. 좋은 탄수화물. 식이섬유 풍부. 당뇨 있는 경우 소량만.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🥕</span><span class="food-name">당근</span></div>
+        <div class="food-desc">날것도 가능. 베타카로틴. 소화 위해 잘게 썰거나 익혀서.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🥦</span><span class="food-name">브로콜리</span></div>
+        <div class="food-desc">소량만. 비타민C 풍부. 많이 주면 소화불량. 생것도 가능.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🍎</span><span class="food-name">사과 (씨 제외)</span></div>
+        <div class="food-desc">씨와 심지 제거 필수. 비타민A·C. 당분 있어 소량만.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🫐</span><span class="food-name">블루베리</span></div>
+        <div class="food-desc">항산화 풍부. 간식으로 소량. 냉동도 가능.</div>
+      </div>
+      <div class="food-card safe">
+        <div class="food-card-header"><span class="food-icon">🌾</span><span class="food-name">현미/오트밀</span></div>
+        <div class="food-desc">잘 익혀서. 소화 잘 되는 탄수화물. 글루텐 민감하면 피할 것.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 주의식품 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag" style="background:var(--yellow-pale);color:#92640a">⚠️ 주의 식품</div>
+      <div class="section-title">소량은 괜찮지만 많이 주면 안 되는 것</div>
+    </div>
+    <div class="food-grid">
+      <div class="food-card caution">
+        <div class="food-card-header"><span class="food-icon">🧀</span><span class="food-name">치즈/유제품</span></div>
+        <div class="food-desc">소량은 괜찮음. 유당불내증 있는 아이는 설사. 저지방 치즈 권장.</div>
+      </div>
+      <div class="food-card caution">
+        <div class="food-card-header"><span class="food-icon">🥜</span><span class="food-name">땅콩버터</span></div>
+        <div class="food-desc">자일리톨 없는 제품만. 고지방이라 소량만. 알레르기 체크.</div>
+      </div>
+      <div class="food-card caution">
+        <div class="food-card-header"><span class="food-icon">🥩</span><span class="food-name">생고기</span></div>
+        <div class="food-desc">기생충·살모넬라 위험. 냉동 처리 후 급여 권장. 익혀서 주는 게 안전.</div>
+      </div>
+      <div class="food-card caution">
+        <div class="food-card-header"><span class="food-icon">🍄</span><span class="food-name">버섯</span></div>
+        <div class="food-desc">시중 식용버섯(표고·양송이)은 소량 가능. 야생 버섯은 금지.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 절대 금지 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag" style="background:var(--red-pale);color:var(--red)">🚫 절대 금지</div>
+      <div class="section-title">이것만은 절대 주지 마세요</div>
+      <div class="section-desc">소량이라도 심각한 독성을 유발합니다.</div>
+    </div>
+    <div class="food-grid">
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🍇</span><span class="food-name">포도/건포도</span></div>
+        <div class="food-desc">급성 신부전 유발. 소량도 치명적. 왜 독성인지 아직 불명확. 절대 금지.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🧅</span><span class="food-name">양파/파/마늘</span></div>
+        <div class="food-desc">적혈구 파괴(용혈성 빈혈). 익혀도 독성 유지. 조리된 음식 속 소량도 누적 위험.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🍫</span><span class="food-name">초콜릿/카카오</span></div>
+        <div class="food-desc">테오브로민 독성. 심장 부정맥, 경련. 다크초콜릿이 더 위험.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🍬</span><span class="food-name">자일리톨</span></div>
+        <div class="food-desc">급격한 저혈당, 간부전. 무설탕 껌·사탕에 주로 포함. 성분표 확인 필수.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🥑</span><span class="food-name">아보카도</span></div>
+        <div class="food-desc">퍼신 독성. 구토, 설사, 심근 손상. 과육뿐 아니라 씨, 껍질, 잎도 금지.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🍺</span><span class="food-name">알코올/커피/카페인</span></div>
+        <div class="food-desc">소량도 간/신장 손상. 커피 원두, 커피잔 잔여물도 위험.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🦴</span><span class="food-name">익힌 뼈</span></div>
+        <div class="food-desc">익히면 부스러져 장 천공 위험. 날뼈는 상대적으로 안전하나 감독 필요.</div>
+      </div>
+      <div class="food-card danger">
+        <div class="food-card-header"><span class="food-icon">🌰</span><span class="food-name">마카다미아 너트</span></div>
+        <div class="food-desc">구토, 발열, 떨림, 보행 이상. 독성 기전 불명확. 소량도 위험.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 화식 식단 예시 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">🍱 식단 예시</div>
+      <div class="section-title">체중별 하루 화식 식단 예시</div>
+      <div class="section-desc">성견 기준. 실제 섭취량은 체중·활동량·건강상태에 따라 조정하세요.</div>
+    </div>
+
+    <div class="meal-example">
+      <div class="meal-header">
+        <span class="meal-title">🐶 소형견 (5kg 기준)</span>
+        <span class="meal-weight">하루 약 300kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-row"><span class="meal-ingredient">닭가슴살 (삶은 것)</span><span class="meal-amount">80g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">고구마 (삶은 것)</span><span class="meal-amount">40g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">당근 (익힌 것)</span><span class="meal-amount">20g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">계란 (완숙)</span><span class="meal-amount">1/2개</span></div>
+        <div class="meal-row"><span class="meal-ingredient">연어오일</span><span class="meal-amount">1/2 티스푼</span></div>
+        <div class="meal-row"><span class="meal-ingredient">칼슘 보충제</span><span class="meal-amount">200mg</span></div>
+      </div>
+      <div class="meal-total">
+        <span>총 열량</span><span>약 280~320kcal</span>
+      </div>
+    </div>
+
+    <div class="meal-example">
+      <div class="meal-header">
+        <span class="meal-title">🐕 중형견 (15kg 기준)</span>
+        <span class="meal-weight">하루 약 700kcal</span>
+      </div>
+      <div class="meal-body">
+        <div class="meal-row"><span class="meal-ingredient">소고기 (삶은 것, 저지방)</span><span class="meal-amount">200g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">현미밥</span><span class="meal-amount">60g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">브로콜리 + 당근 (익힌 것)</span><span class="meal-amount">80g</span></div>
+        <div class="meal-row"><span class="meal-ingredient">계란 (완숙)</span><span class="meal-amount">1개</span></div>
+        <div class="meal-row"><span class="meal-ingredient">연어오일</span><span class="meal-amount">1 티스푼</span></div>
+        <div class="meal-row"><span class="meal-ingredient">칼슘 보충제</span><span class="meal-amount">500mg</span></div>
+      </div>
+      <div class="meal-total">
+        <span>총 열량</span><span>약 650~750kcal</span>
+      </div>
+    </div>
+
+    <div class="warn-box">
+      ⚠️ 화식 시작 후 3~4주는 기존 사료와 혼합해서 소화기관이 적응하도록 하세요.<br>
+      갑작스런 식단 전환은 설사를 유발할 수 있습니다.
+    </div>
+  </div>
+
+  <!-- 필수 보충제 -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-tag">💊 보충제</div>
+      <div class="section-title">화식 시 필수 보충제</div>
+      <div class="section-desc">화식만으로는 부족할 수 있는 영양소입니다. 이것만 챙기면 됩니다.</div>
+    </div>
+    <div class="supplement-list">
+      <div class="supplement-card">
+        <div class="supplement-name">칼슘</div>
+        <div class="supplement-why">★ 가장 중요</div>
+        <div class="supplement-desc">뼈 없이 화식하면 칼슘이 부족합니다. 체중 1kg당 50~100mg. 달걀껍데기 분말도 가능.</div>
+      </div>
+      <div class="supplement-card">
+        <div class="supplement-name">오메가-3 (연어오일)</div>
+        <div class="supplement-why">항염, 피부, 심장</div>
+        <div class="supplement-desc">체중 1kg당 EPA+DHA 50~100mg. 생선을 매일 주면 별도 보충 불필요.</div>
+      </div>
+      <div class="supplement-card">
+        <div class="supplement-name">비타민 D</div>
+        <div class="supplement-why">칼슘 흡수 도움</div>
+        <div class="supplement-desc">실내 생활이 많은 경우 부족하기 쉬움. 동물용 멀티비타민에 포함된 경우 많음.</div>
+      </div>
+      <div class="supplement-card">
+        <div class="supplement-name">아연</div>
+        <div class="supplement-why">면역, 피부, 털</div>
+        <div class="supplement-desc">고기 위주 화식이면 충분한 경우 많음. 허스키 등 일부 품종은 아연 흡수 장애.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function calcCalories() {
+  const weight   = parseFloat(document.getElementById('calcWeight').value);
+  const ageGroup = document.getElementById('calcAge').value;
+  const activity = parseFloat(document.getElementById('calcActivity').value);
+  const neutered = parseFloat(document.getElementById('calcNeutered').value);
+
+  if (!weight || weight <= 0) {
+    alert('체중을 입력해주세요.');
+    return;
+  }
+
+  // RER (Resting Energy Requirement) = 70 × (체중)^0.75
+  const rer = 70 * Math.pow(weight, 0.75);
+
+  // 나이별 계수
+  const ageFactor = { puppy: 2.0, adult: 1.6, senior: 1.4 };
+  const factor = ageFactor[ageGroup] * activity * neutered;
+
+  const kcal    = Math.round(rer * factor);
+  const protein = Math.round(kcal * 0.40 / 4);  // 단백질 4kcal/g
+  const fat     = Math.round(kcal * 0.30 / 9);  // 지방 9kcal/g
+  const carb    = Math.round(kcal * 0.30 / 4);  // 탄수화물 4kcal/g
+  const chicken = Math.round(protein / 0.31);    // 닭가슴살 단백질 31%
+
+  document.getElementById('rKcal').textContent    = `${kcal} kcal`;
+  document.getElementById('rProtein').textContent = `약 ${protein}g`;
+  document.getElementById('rFat').textContent     = `약 ${fat}g`;
+  document.getElementById('rCarb').textContent    = `약 ${carb}g`;
+  document.getElementById('rChicken').textContent = `약 ${chicken}g`;
+
+  document.getElementById('calcResult').classList.add('show');
+}
+</script>
+
+</body>
+</html>

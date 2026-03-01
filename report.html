@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>증상 분석 리포트 — 테베리디</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fffdf9;
+    --surface: #ffffff;
+    --border: #ede8e0;
+    --border-active: #2d6a4f;
+    --text: #1c1a17;
+    --text-muted: #6b6458;
+    --text-dim: #a89e92;
+    --green: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #d8f3dc;
+    --orange: #e07b39;
+    --orange-pale: #fdebd0;
+    --red: #c0392b;
+    --error: #e53935;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.8;
+    padding-bottom: 80px;
+  }
+
+  /* 네비 */
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(255,253,249,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--green);
+    text-decoration: none;
+  }
+
+  .nav-logo span { color: var(--text); }
+
+  .nav-back {
+    font-size: 14px;
+    color: var(--text-muted);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color 0.2s;
+  }
+
+  .nav-back:hover { color: var(--green); }
+
+  /* 페이지 헤더 */
+  .page-header {
+    background: var(--green);
+    padding: 48px 24px;
+    text-align: center;
+  }
+
+  .page-header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    color: white;
+    padding: 5px 14px;
+    border-radius: 100px;
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+
+  .page-header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(24px, 4vw, 36px);
+    font-weight: 600;
+    color: white;
+    margin-bottom: 12px;
+  }
+
+  .page-header p {
+    font-size: 16px;
+    color: rgba(255,255,255,0.75);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  /* 가격 배너 */
+  .price-banner {
+    background: white;
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .price-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+  }
+
+  .price-item strong {
+    color: var(--green);
+    font-size: 18px;
+    font-weight: 600;
+    font-family: 'Noto Serif KR', serif;
+  }
+
+  /* 폼 래퍼 */
+  .form-wrap {
+    max-width: 620px;
+    margin: 0 auto;
+    padding: 48px 24px 0;
+  }
+
+  /* 섹션 구분 */
+  .form-section {
+    margin-bottom: 40px;
+  }
+
+  .form-section-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--green-pale);
+  }
+
+  /* 필드 */
+  .field {
+    margin-bottom: 24px;
+  }
+
+  .field-label {
+    display: block;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .field-label .req {
+    color: var(--red);
+    margin-left: 3px;
+  }
+
+  .field-note {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+    line-height: 1.6;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    background: white;
+    border: 1.5px solid var(--border);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 300;
+    padding: 13px 16px;
+    border-radius: 10px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    -webkit-appearance: none;
+  }
+
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--border-active);
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.08);
+  }
+
+  textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.7;
+  }
+
+  select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b6458' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    padding-right: 40px;
+  }
+
+  /* 인라인 그리드 */
+  .field-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  .field-grid-3 {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 12px;
+  }
+
+  /* 라디오/체크 */
+  .radio-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .radio-group.col {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .radio-item { position: relative; }
+
+  .radio-item input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .radio-item label {
+    display: block;
+    padding: 10px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  .radio-group.col .radio-item label {
+    white-space: normal;
+    padding: 12px 18px;
+  }
+
+  .radio-item input:checked + label {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-pale);
+    font-weight: 500;
+  }
+
+  .radio-item label:hover {
+    border-color: var(--green-light);
+    color: var(--green);
+  }
+
+  /* 증상 태그 선택 */
+  .symptom-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 8px;
+  }
+
+  .symptom-item { position: relative; }
+
+  .symptom-item input {
+    position: absolute;
+    opacity: 0;
+    width: 0; height: 0;
+  }
+
+  .symptom-item label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    user-select: none;
+  }
+
+  .symptom-item input:checked + label {
+    border-color: var(--green);
+    color: var(--green);
+    background: var(--green-pale);
+    font-weight: 500;
+  }
+
+  .symptom-item label:hover {
+    border-color: var(--green-light);
+    color: var(--green);
+  }
+
+  /* 긴급도 슬라이더 */
+  .urgency-wrap {
+    padding: 4px 0;
+  }
+
+  input[type="range"] {
+    width: 100%;
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    outline: none;
+    border: none;
+    box-shadow: none;
+    cursor: pointer;
+    padding: 0;
+    -webkit-appearance: none;
+  }
+
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--green);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(45,106,79,0.3);
+  }
+
+  .urgency-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 8px;
+  }
+
+  /* 업로드 */
+  .upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    position: relative;
+  }
+
+  .upload-area:hover {
+    border-color: var(--green);
+    background: var(--green-pale);
+  }
+
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+    border: none;
+    padding: 0;
+  }
+
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+
+  .upload-text {
+    font-size: 15px;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+  }
+
+  .upload-note {
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  #upload-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .preview-thumb {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* 안내 박스 */
+  .info-box {
+    background: var(--green-pale);
+    border: 1px solid #b7e4c7;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+
+  .info-box p {
+    font-size: 14px;
+    color: var(--green);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  .warn-box {
+    background: var(--orange-pale);
+    border: 1px solid #f4c08a;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+  }
+
+  .warn-box p {
+    font-size: 14px;
+    color: #b05a10;
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* 가격 요약 */
+  .price-summary {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 15px;
+  }
+
+  .price-row:last-child { border-bottom: none; }
+
+  .price-row .label { color: var(--text-muted); }
+  .price-row .value { font-weight: 500; color: var(--text); }
+  .price-row.total .label { font-weight: 500; color: var(--text); }
+  .price-row.total .value {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* 에러 */
+  .field-error {
+    font-size: 13px;
+    color: var(--error);
+    margin-top: 6px;
+    display: none;
+  }
+
+  .field.error input,
+  .field.error select,
+  .field.error textarea {
+    border-color: var(--error);
+  }
+
+  .field.error .field-error { display: block; }
+
+  /* 제출 버튼 */
+  .btn-submit {
+    width: 100%;
+    padding: 18px;
+    background: var(--green);
+    border: none;
+    color: white;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 17px;
+    font-weight: 500;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.25s;
+    letter-spacing: 0.03em;
+    box-shadow: 0 4px 16px rgba(45,106,79,0.25);
+  }
+
+  .btn-submit:hover {
+    background: var(--green-light);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45,106,79,0.3);
+  }
+
+  .btn-submit:active { transform: translateY(0); }
+
+  /* 완료 화면 */
+  .complete-screen {
+    display: none;
+    text-align: center;
+    padding: 80px 24px;
+    max-width: 480px;
+    margin: 0 auto;
+    animation: fadeUp 0.5s ease;
+  }
+
+  .complete-screen.show { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .complete-icon { font-size: 56px; margin-bottom: 24px; }
+
+  .complete-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--green);
+  }
+
+  .complete-desc {
+    font-size: 16px;
+    color: var(--text-muted);
+    line-height: 1.9;
+    margin-bottom: 36px;
+  }
+
+  .complete-steps {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    text-align: left;
+    margin-bottom: 32px;
+  }
+
+  .complete-step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .complete-step:last-child { border-bottom: none; }
+
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--green);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 500;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .step-text { font-size: 15px; color: var(--text-muted); line-height: 1.6; }
+  .step-text strong { color: var(--text); font-weight: 500; }
+
+  /* 결제 버튼 */
+  .payment-box {
+    background: white;
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .payment-header {
+    background: var(--green-pale);
+    padding: 14px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #b7e4c7;
+  }
+
+  .payment-header .p-label { font-size: 14px; color: var(--green); font-weight: 500; }
+  .payment-header .p-price {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  .payment-body { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+
+  .btn-toss {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: #3182f6;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    text-align: center;
+  }
+
+  .btn-toss:hover { opacity: 0.9; }
+
+  .btn-kakao {
+    display: block;
+    width: 100%;
+    padding: 14px;
+    background: #fee500;
+    color: #191919;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    text-align: center;
+  }
+
+  .btn-kakao:hover { opacity: 0.9; }
+
+  .payment-note {
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  @media (max-width: 540px) {
+    .field-grid-2 { grid-template-columns: 1fr; }
+    .field-grid-3 { grid-template-columns: 1fr 1fr; }
+    .field-grid-3 > *:first-child { grid-column: 1 / -1; }
+    .symptom-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">테베리<span>디</span></a>
+  <a href="index.html" class="nav-back">← 홈으로</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-badge">🔍 병원 가기 전에</div>
+  <h1>증상 분석 리포트</h1>
+  <p>증상을 입력하면 가능한 질환과 병원에서 해야 할 질문을 알려드립니다</p>
+</div>
+
+<div class="price-banner">
+  <div class="price-item">💰 <strong>19,900원</strong> 단 1회 결제</div>
+  <div class="price-item">📄 PDF 리포트 발송</div>
+  <div class="price-item">⏱️ 접수 후 2시간 이내</div>
+  <div class="price-item">🔒 개인정보 즉시 삭제</div>
+</div>
+
+<!-- 폼 -->
+<div class="form-wrap" id="formWrap">
+
+  <div class="info-box">
+    <p>✅ 자세히 입력할수록 더 정확한 분석이 가능합니다. 모르는 항목은 건너뛰어도 됩니다.</p>
+  </div>
+
+  <!-- SECTION 1: 반려동물 기본 정보 -->
+  <div class="form-section">
+    <div class="form-section-title">01 · 반려동물 기본 정보</div>
+
+    <div class="field" id="f-petname">
+      <label class="field-label">이름 <span class="req">*</span></label>
+      <input type="text" id="petname" placeholder="예: 베리">
+      <div class="field-error">이름을 입력해주세요</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">종류 <span class="req">*</span></label>
+      <div class="radio-group">
+        <div class="radio-item">
+          <input type="radio" name="species" id="dog" value="강아지">
+          <label for="dog">🐶 강아지</label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" name="species" id="cat" value="고양이">
+          <label for="cat">🐱 고양이</label>
+        </div>
+        <div class="radio-item">
+          <input type="radio" name="species" id="other" value="기타">
+          <label for="other">🐾 기타</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-grid-2">
+      <div class="field" id="f-breed">
+        <label class="field-label">품종</label>
+        <input type="text" id="breed" placeholder="예: 말티푸, 믹스">
+      </div>
+      <div class="field">
+        <label class="field-label">성별</label>
+        <div class="radio-group">
+          <div class="radio-item">
+            <input type="radio" name="sex" id="male" value="수컷">
+            <label for="male">수컷</label>
+          </div>
+          <div class="radio-item">
+            <input type="radio" name="sex" id="female" value="암컷">
+            <label for="female">암컷</label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="field-grid-3">
+      <div class="field" id="f-age">
+        <label class="field-label">나이 <span class="req">*</span></label>
+        <input type="text" id="age" placeholder="예: 3살, 8개월">
+        <div class="field-error">나이를 입력해주세요</div>
+      </div>
+      <div class="field">
+        <label class="field-label">체중 (kg)</label>
+        <input type="number" id="weight" placeholder="5.2" step="0.1" min="0">
+      </div>
+      <div class="field">
+        <label class="field-label">중성화</label>
+        <select id="neutered">
+          <option value="">선택</option>
+          <option>했음</option>
+          <option>안 했음</option>
+          <option>모름</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 2: 증상 -->
+  <div class="form-section">
+    <div class="form-section-title">02 · 증상</div>
+
+    <div class="field">
+      <label class="field-label">주요 증상 선택 <span class="req">*</span></label>
+      <div class="field-note">해당하는 것 모두 선택하세요</div>
+      <div class="symptom-grid">
+        <div class="symptom-item"><input type="checkbox" id="s1" value="구토"><label for="s1">🤢 구토</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s2" value="설사"><label for="s2">💩 설사</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s3" value="식욕저하"><label for="s3">🍽️ 식욕저하</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s4" value="무기력"><label for="s4">😴 무기력</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s5" value="기침/재채기"><label for="s5">🤧 기침/재채기</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s6" value="절뚝거림"><label for="s6">🦴 절뚝거림</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s7" value="피부/털 문제"><label for="s7">🐾 피부/털</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s8" value="눈/귀 분비물"><label for="s8">👁️ 눈/귀</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s9" value="잦은 배뇨"><label for="s9">💧 잦은 배뇨</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s10" value="배뇨 곤란"><label for="s10">🚫 배뇨 곤란</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s11" value="체중감소"><label for="s11">⚖️ 체중감소</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s12" value="음수량 증가"><label for="s12">🚰 물 많이 마심</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s13" value="발작/경련"><label for="s13">⚡ 발작/경련</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s14" value="복부팽만"><label for="s14">🫃 배 부름</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s15" value="호흡 이상"><label for="s15">💨 호흡 이상</label></div>
+        <div class="symptom-item"><input type="checkbox" id="s16" value="기타"><label for="s16">➕ 기타</label></div>
+      </div>
+    </div>
+
+    <div class="field" id="f-symptom-detail">
+      <label class="field-label">증상 자세히 설명 <span class="req">*</span></label>
+      <div class="field-note">언제부터, 얼마나 자주, 어떤 상황에서 나타나는지 적어주세요</div>
+      <textarea id="symptom-detail" placeholder="예: 3일 전부터 밥을 잘 안 먹고 있어요. 오늘 아침에 노란 액체를 두 번 토했고, 평소보다 많이 누워있습니다. 어제 산책 중에 뭔가를 먹은 것 같기도 합니다."></textarea>
+      <div class="field-error">증상을 자세히 설명해주세요</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">증상 시작 시점</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="onset" id="o1" value="오늘"><label for="o1">오늘</label></div>
+        <div class="radio-item"><input type="radio" name="onset" id="o2" value="2~3일 전"><label for="o2">2~3일 전</label></div>
+        <div class="radio-item"><input type="radio" name="onset" id="o3" value="1주일 전"><label for="o3">1주일 전</label></div>
+        <div class="radio-item"><input type="radio" name="onset" id="o4" value="1개월 이상"><label for="o4">1개월 이상</label></div>
+        <div class="radio-item"><input type="radio" name="onset" id="o5" value="모름"><label for="o5">모름</label></div>
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">증상 심각도</label>
+      <div class="urgency-wrap">
+        <input type="range" id="severity" min="1" max="5" value="3">
+        <div class="urgency-labels">
+          <span>가볍게 이상함</span>
+          <span>보통</span>
+          <span>많이 걱정됨</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECTION 3: 병원 방문 이력 -->
+  <div class="form-section">
+    <div class="form-section-title">03 · 병원 방문 이력</div>
+
+    <div class="field">
+      <label class="field-label">이 증상으로 병원에 가본 적 있나요?</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="visited" id="v1" value="없음"><label for="v1">아직 없어요</label></div>
+        <div class="radio-item"><input type="radio" name="visited" id="v2" value="있음"><label for="v2">갔다 왔어요</label></div>
+      </div>
+    </div>
+
+    <div class="field" id="visit-detail-field" style="display:none">
+      <label class="field-label">병원에서 들은 내용</label>
+      <div class="field-note">진단명, 처방약, 권유받은 검사나 수술이 있으면 적어주세요</div>
+      <textarea id="visit-detail" placeholder="예: 장염 진단을 받았고 항생제와 정장제를 처방받았습니다. 추가로 초음파 검사를 권유받았습니다."></textarea>
+    </div>
+
+    <div class="field">
+      <label class="field-label">현재 복용 중인 약</label>
+      <input type="text" id="current-meds" placeholder="예: 없음, 심장사상충 예방약, 관절 영양제">
+    </div>
+
+    <div class="field">
+      <label class="field-label">평소 기저질환</label>
+      <input type="text" id="conditions" placeholder="예: 없음, 슬개골 1기, 알레르기">
+    </div>
+  </div>
+
+  <!-- SECTION 4: 사진 첨부 (선택) -->
+  <div class="form-section">
+    <div class="form-section-title">04 · 사진 첨부 (선택)</div>
+
+    <div class="field-note" style="margin-bottom:12px">
+      X레이 사진, 피부 상태, 눈/귀 분비물 등 — 핸드폰으로 찍은 사진도 괜찮습니다.<br>
+      <strong style="color:var(--green)">X레이는 당연히 사진 달라고 할 수 있습니다.</strong> 보호자의 권리입니다.
+    </div>
+
+    <div class="upload-area" id="uploadArea">
+      <input type="file" id="photoUpload" multiple accept="image/*">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">사진을 여기에 끌어다 놓거나 클릭하세요</div>
+      <div class="upload-note">JPG, PNG · 최대 5장 · 각 10MB 이하</div>
+    </div>
+    <div id="upload-preview"></div>
+  </div>
+
+  <!-- SECTION 5: 연락처 -->
+  <div class="form-section">
+    <div class="form-section-title">05 · 연락처</div>
+
+    <div class="field" id="f-email">
+      <label class="field-label">이메일 <span class="req">*</span></label>
+      <div class="field-note">리포트를 받을 이메일 주소입니다</div>
+      <input type="email" id="email" placeholder="example@gmail.com">
+      <div class="field-error">올바른 이메일 주소를 입력해주세요</div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">추가로 궁금한 것</label>
+      <div class="field-note">리포트에서 특히 집중해서 분석해줬으면 하는 부분이 있으면 적어주세요</div>
+      <textarea id="extra" placeholder="예: 병원에서 수술을 권유받았는데 꼭 해야 하는지 알고 싶어요." style="min-height:90px"></textarea>
+    </div>
+  </div>
+
+  <!-- 가격 요약 -->
+  <div class="price-summary">
+    <div class="price-row">
+      <span class="label">증상 분석 리포트</span>
+      <span class="value">19,900원</span>
+    </div>
+    <div class="price-row">
+      <span class="label">PDF 발송</span>
+      <span class="value">포함</span>
+    </div>
+    <div class="price-row">
+      <span class="label">발송 시간</span>
+      <span class="value">접수 후 2시간 이내</span>
+    </div>
+    <div class="price-row total">
+      <span class="label">합계</span>
+      <span class="value">19,900원</span>
+    </div>
+  </div>
+
+  <div class="warn-box">
+    <p>⚠️ 본 리포트는 정보 제공 목적이며 수의학적 진단이 아닙니다. 응급 상황(호흡 곤란, 심한 경련, 대량 출혈 등)에는 즉시 동물병원을 방문하세요.</p>
+  </div>
+
+  <button class="btn-submit" onclick="submitForm()">리포트 신청하기 →</button>
+
+</div>
+
+<!-- 완료 화면 -->
+<div class="complete-screen" id="completeScreen">
+  <div class="complete-icon">🐾</div>
+  <div class="complete-title">접수 완료!</div>
+  <div class="complete-desc">
+    결제가 확인되면 분석을 시작합니다.<br>
+    2시간 이내에 이메일로 리포트를 보내드립니다.
+  </div>
+
+  <div class="complete-steps">
+    <div class="complete-step">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>지금 결제</strong>해주세요. 결제 확인 후 분석을 시작합니다.</div>
+    </div>
+    <div class="complete-step">
+      <div class="step-num">2</div>
+      <div class="step-text">2시간 이내에 <strong>이메일로 PDF 리포트</strong>가 발송됩니다.</div>
+    </div>
+    <div class="complete-step">
+      <div class="step-num">3</div>
+      <div class="step-text">리포트를 읽고 <strong>병원에서 질문할 것</strong>을 준비하세요.</div>
+    </div>
+  </div>
+
+  <div class="payment-box">
+    <div class="payment-header">
+      <span class="p-label">증상 분석 리포트</span>
+      <span class="p-price">19,900원</span>
+    </div>
+    <div class="payment-body">
+      <button class="btn-toss" onclick="alert('토스페이먼츠 연동 예정')">토스로 결제하기</button>
+      <button class="btn-kakao" onclick="alert('카카오페이 연동 예정')">카카오페이로 결제하기</button>
+    </div>
+    <div class="payment-note">계좌이체를 원하시면 이메일로 안내드립니다</div>
+  </div>
+
+  <a href="index.html" style="font-size:15px; color:var(--text-muted); text-decoration:none;">← 홈으로 돌아가기</a>
+</div>
+
+<script>
+  // 병원 방문 여부에 따라 상세 필드 토글
+  document.querySelectorAll('input[name="visited"]').forEach(el => {
+    el.addEventListener('change', () => {
+      const detail = document.getElementById('visit-detail-field');
+      detail.style.display = el.value === '있음' ? 'block' : 'none';
+    });
+  });
+
+  // 파일 업로드 미리보기
+  document.getElementById('photoUpload').addEventListener('change', function() {
+    const preview = document.getElementById('upload-preview');
+    preview.innerHTML = '';
+    const files = Array.from(this.files).slice(0, 5);
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        img.className = 'preview-thumb';
+        preview.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  });
+
+  // 폼 제출
+  function submitForm() {
+    let valid = true;
+
+    // 이름 검증
+    const petname = document.getElementById('petname').value.trim();
+    const fPetname = document.getElementById('f-petname');
+    fPetname.classList.remove('error');
+    if (!petname) { fPetname.classList.add('error'); valid = false; }
+
+    // 나이 검증
+    const age = document.getElementById('age').value.trim();
+    const fAge = document.getElementById('f-age');
+    fAge.classList.remove('error');
+    if (!age) { fAge.classList.add('error'); valid = false; }
+
+    // 증상 상세 검증
+    const detail = document.getElementById('symptom-detail').value.trim();
+    const fDetail = document.getElementById('f-symptom-detail');
+    fDetail.classList.remove('error');
+    if (!detail) { fDetail.classList.add('error'); valid = false; }
+
+    // 이메일 검증
+    const email = document.getElementById('email').value.trim();
+    const fEmail = document.getElementById('f-email');
+    fEmail.classList.remove('error');
+    const emailReg = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailReg.test(email)) { fEmail.classList.add('error'); valid = false; }
+
+    if (!valid) {
+      document.querySelector('.field.error').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      return;
+    }
+
+    // TODO: Google Apps Script 연동
+    // const data = { petname, age, email, ... };
+    // fetch('APPS_SCRIPT_URL', { method: 'POST', body: JSON.stringify(data) });
+
+    document.getElementById('formWrap').style.display = 'none';
+    document.getElementById('completeScreen').classList.add('show');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+
+</body>
+</html>
