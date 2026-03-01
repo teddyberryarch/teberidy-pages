@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>품종별 종특 DB — 테베리디</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fffdf9;
+    --surface: #ffffff;
+    --border: #ede8e0;
+    --border-active: #2d6a4f;
+    --text: #1c1a17;
+    --text-muted: #6b6458;
+    --text-dim: #a89e92;
+    --green: #2d6a4f;
+    --green-light: #40916c;
+    --green-pale: #d8f3dc;
+    --orange: #e07b39;
+    --orange-pale: #fdebd0;
+    --red: #c0392b;
+    --red-pale: #fdecea;
+    --blue: #2563eb;
+    --blue-pale: #dbeafe;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    font-size: 17px;
+    line-height: 1.8;
+    padding-bottom: 80px;
+  }
+
+  nav {
+    position: sticky;
+    top: 0; z-index: 100;
+    background: rgba(255,253,249,0.95);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .nav-logo { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 600; color: var(--green); text-decoration: none; }
+  .nav-logo span { color: var(--text); }
+  .nav-back { font-size: 14px; color: var(--text-muted); text-decoration: none; transition: color 0.2s; }
+  .nav-back:hover { color: var(--green); }
+
+  .page-header {
+    background: var(--green);
+    padding: 44px 24px;
+    text-align: center;
+  }
+
+  .page-header-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.18);
+    color: white;
+    padding: 5px 16px;
+    border-radius: 100px;
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+
+  .page-header h1 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: clamp(22px, 4vw, 34px);
+    font-weight: 600;
+    color: white;
+    margin-bottom: 10px;
+  }
+
+  .page-header p {
+    font-size: 15px;
+    color: rgba(255,255,255,0.75);
+    max-width: 480px;
+    margin: 0 auto;
+  }
+
+  .wrap { max-width: 900px; margin: 0 auto; padding: 40px 24px 0; }
+
+  /* 검색 */
+  .search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .search-input {
+    flex: 1;
+    padding: 14px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 16px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 300;
+    outline: none;
+    background: white;
+    color: var(--text);
+    transition: border-color 0.2s;
+  }
+
+  .search-input:focus { border-color: var(--border-active); }
+
+  /* 카테고리 */
+  .category-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 28px;
+    flex-wrap: wrap;
+  }
+
+  .cat-tab {
+    padding: 8px 18px;
+    border: 1.5px solid var(--border);
+    border-radius: 100px;
+    font-size: 14px;
+    color: var(--text-muted);
+    cursor: pointer;
+    background: white;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .cat-tab:hover { border-color: var(--green); color: var(--green); }
+  .cat-tab.active { border-color: var(--green); background: var(--green-pale); color: var(--green); font-weight: 500; }
+
+  /* 품종 카드 그리드 */
+  .breed-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .breed-card {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+  }
+
+  .breed-card:hover {
+    border-color: var(--green);
+    box-shadow: 0 4px 20px rgba(45,106,79,0.12);
+    transform: translateY(-2px);
+  }
+
+  .breed-card-top {
+    padding: 20px 20px 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breed-emoji { font-size: 32px; margin-bottom: 8px; }
+
+  .breed-name {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .breed-eng { font-size: 13px; color: var(--text-dim); margin-bottom: 8px; }
+
+  .breed-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+
+  .breed-tag {
+    font-size: 12px;
+    padding: 2px 10px;
+    border-radius: 100px;
+    background: var(--green-pale);
+    color: var(--green);
+  }
+
+  .breed-tag.warn {
+    background: var(--orange-pale);
+    color: #9a4f10;
+  }
+
+  .breed-card-body { padding: 14px 20px; }
+
+  .breed-summary {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .breed-disease-list {
+    list-style: none;
+  }
+
+  .breed-disease-list li {
+    font-size: 13px;
+    color: var(--text-muted);
+    padding: 3px 0 3px 16px;
+    position: relative;
+    line-height: 1.5;
+  }
+
+  .breed-disease-list li::before {
+    content: '•';
+    position: absolute;
+    left: 4px;
+    color: var(--orange);
+  }
+
+  .breed-more {
+    display: inline-block;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--green);
+    cursor: pointer;
+    font-weight: 500;
+  }
+
+  /* 상세 모달 */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 500;
+    overflow-y: auto;
+    padding: 24px;
+  }
+
+  .modal-overlay.show { display: flex; align-items: flex-start; justify-content: center; }
+
+  .modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 680px;
+    margin: auto;
+    overflow: hidden;
+    animation: modalIn 0.3s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .modal-header {
+    background: var(--green);
+    padding: 24px 28px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .modal-title-group { flex: 1; }
+
+  .modal-emoji { font-size: 36px; margin-bottom: 6px; }
+
+  .modal-name {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    margin-bottom: 2px;
+  }
+
+  .modal-eng { font-size: 14px; color: rgba(255,255,255,0.65); }
+
+  .modal-close {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    color: white;
+    font-size: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s;
+  }
+
+  .modal-close:hover { background: rgba(255,255,255,0.3); }
+
+  .modal-body { padding: 28px; }
+
+  .modal-section { margin-bottom: 24px; }
+
+  .modal-section-title {
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--green-pale);
+  }
+
+  .modal-text { font-size: 15px; color: var(--text-muted); line-height: 1.8; }
+
+  /* 정상 vs 병원 구분 표 */
+  .check-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+  }
+
+  .check-table th {
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 500;
+    font-size: 13px;
+  }
+
+  .check-table th:first-child { background: var(--green-pale); color: var(--green); border-radius: 6px 0 0 0; }
+  .check-table th:last-child  { background: var(--red-pale);   color: var(--red);   border-radius: 0 6px 0 0; }
+
+  .check-table td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+    line-height: 1.6;
+  }
+
+  .check-table td:first-child { color: var(--green); border-right: 1px solid var(--border); }
+  .check-table td:last-child  { color: var(--red); }
+
+  /* 위험도 바 */
+  .risk-bars { display: flex; flex-direction: column; gap: 10px; }
+
+  .risk-row { display: flex; align-items: center; gap: 12px; }
+
+  .risk-label { font-size: 13px; color: var(--text-muted); min-width: 80px; }
+
+  .risk-bar-bg {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .risk-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.5s ease;
+  }
+
+  .risk-level { font-size: 12px; color: var(--text-dim); min-width: 24px; text-align: right; }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 24px;
+    color: var(--text-dim);
+    grid-column: 1 / -1;
+  }
+
+  .empty-state .icon { font-size: 40px; margin-bottom: 16px; }
+
+  @media (max-width: 600px) {
+    .breed-grid { grid-template-columns: 1fr; }
+    .modal-overlay { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="index.html" class="nav-logo">테베리<span>디</span></a>
+  <a href="index.html" class="nav-back">← 홈으로</a>
+</nav>
+
+<div class="page-header">
+  <div class="page-header-badge">🐕 품종 정보</div>
+  <h1>품종별 종특 DB</h1>
+  <p>우리 아이가 원래 이런 건지, 병원 가야 하는 건지.<br>병원이 굳이 안 알려주는 정보를 정리했습니다.</p>
+</div>
+
+<div class="wrap">
+  <div class="search-row">
+    <input type="text" class="search-input" id="searchInput"
+      placeholder="품종명 검색 (예: 말티푸, 포메, 프렌치불독)"
+      oninput="filterBreeds()">
+  </div>
+
+  <div class="category-tabs">
+    <button class="cat-tab active" onclick="selectCat('전체', this)">전체</button>
+    <button class="cat-tab" onclick="selectCat('소형견', this)">🐩 소형견</button>
+    <button class="cat-tab" onclick="selectCat('중형견', this)">🐕 중형견</button>
+    <button class="cat-tab" onclick="selectCat('대형견', this)">🦮 대형견</button>
+    <button class="cat-tab" onclick="selectCat('고양이', this)">🐱 고양이</button>
+  </div>
+
+  <div class="breed-grid" id="breedGrid"></div>
+</div>
+
+<!-- 모달 -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title-group">
+        <div class="modal-emoji" id="mEmoji"></div>
+        <div class="modal-name" id="mName"></div>
+        <div class="modal-eng" id="mEng"></div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<script>
+const BREEDS = [
+  {
+    id: 1,
+    name: '말티푸', eng: 'Maltipoo', emoji: '🐩',
+    category: '소형견',
+    tags: ['소형견', '믹스', '저알레르기'],
+    warn_tags: ['슬개골 주의', '외이염 주의'],
+    summary: '말티즈와 푸들의 믹스. 털 빠짐 적고 알레르기 유발 적음. 감정 표현 풍부하고 분리불안 잘 생김.',
+    diseases: ['슬개골 탈구', '외이염', '눈물자국 과다', '분리불안', '치아 문제'],
+    normal: [
+      { normal: '눈 밑 갈색 눈물자국', abnormal: '눈물이 갑자기 증가하거나 눈 충혈' },
+      { normal: '가끔 뒷다리 들고 걷기 (슬개골 일시 탈구)', abnormal: '지속적인 절뚝거림 또는 뒷다리를 못 씀' },
+      { normal: '귀에서 약한 냄새 (약간의 왁스)', abnormal: '심한 냄새, 귀 긁기, 머리 흔들기' },
+    ],
+    risks: { '슬개골': 85, '외이염': 80, '눈물과다': 75, '분리불안': 70, '치석': 65 },
+    care: '귀 청결 주 1회 권장. 슬개골 관리 위해 점프 최소화, 미끄럼 방지 매트 설치. 정기 스케일링 연 1~2회.',
+    vet_note: '슬개골 진단은 X레이로 확인하는 게 원칙입니다. 촉진만으로 3~4기라고 하면 X레이를 요청하세요.',
+  },
+  {
+    id: 2,
+    name: '포메라니안', eng: 'Pomeranian', emoji: '🦊',
+    category: '소형견',
+    tags: ['소형견', '활발함', '경계심 강함'],
+    warn_tags: ['기관허탈 주의', '저혈당 주의'],
+    summary: '소형이지만 자기 크기를 모름. 경계심 강하고 짖음 많음. 털이 많아 그루밍 중요.',
+    diseases: ['기관허탈', '저혈당', '슬개골 탈구', '탈모증후군', '심장 질환'],
+    normal: [
+      { normal: '가끔 거위 울음 같은 기침 (흥분 시)', abnormal: '지속적인 거위 울음 기침, 파란 잇몸' },
+      { normal: '체형에 맞는 마른 편', abnormal: '갑작스러운 체중 감소, 식욕 저하' },
+      { normal: '털이 균일하게 빠짐', abnormal: '특정 부위만 탈모, 피부 색소 변화' },
+    ],
+    risks: { '기관허탈': 80, '저혈당': 70, '슬개골': 75, '탈모': 60, '심장': 55 },
+    care: '목줄 대신 하네스 필수 (기관 압박 방지). 소량 자주 먹이기 (저혈당 예방). 격렬한 운동 후 충분한 휴식.',
+    vet_note: '거위 울음 같은 기침 = 기관허탈 신호일 수 있습니다. "기침이 언제부터, 어떤 상황에서 나는지" 영상 촬영해서 병원에 보여주세요.',
+  },
+  {
+    id: 3,
+    name: '말티즈', eng: 'Maltese', emoji: '🐶',
+    category: '소형견',
+    tags: ['소형견', '장모종', '애교 많음'],
+    warn_tags: ['눈물자국', '치아 주의'],
+    summary: '흰 털과 큰 눈이 특징. 눈물자국이 생기기 쉽고 치아 문제가 잦음. 순하고 온순한 성격.',
+    diseases: ['눈물자국/과루증', '치아 문제', '슬개골 탈구', '외이염', '피부 알레르기'],
+    normal: [
+      { normal: '눈 밑 갈색 눈물자국', abnormal: '갑작스런 눈물 증가, 눈 충혈, 분비물' },
+      { normal: '이갈이 시 유치 잔존 (소아기)', abnormal: '성견인데 치아가 흔들리거나 잇몸 붓기' },
+    ],
+    risks: { '눈물과다': 90, '치아': 80, '슬개골': 70, '외이염': 65, '피부': 60 },
+    care: '매일 눈 주위 닦아주기. 정기 스케일링 중요. 귀 털 뽑기는 전문가에게 맡기거나 필요 여부 확인.',
+    vet_note: '말티즈 눈물자국의 70%는 음식·물 알레르기나 눈물관 막힘이 원인입니다. 갑자기 심해지면 원인을 찾아야 합니다.',
+  },
+  {
+    id: 4,
+    name: '시츄', eng: 'Shih Tzu', emoji: '🐕',
+    category: '소형견',
+    tags: ['소형견', '단두종', '온순함'],
+    warn_tags: ['호흡기 주의', '눈 주의'],
+    summary: '납작한 얼굴의 단두종. 더위에 약하고 호흡 문제가 생기기 쉬움. 눈이 크고 돌출되어 눈 부상 위험.',
+    diseases: ['단두종 증후군', '각막 궤양', '눈 돌출 부상', '슬개골 탈구', '피부 주름 감염'],
+    normal: [
+      { normal: '코 고는 소리, 약한 그렁거림', abnormal: '운동 후 입을 벌리고 헐떡이거나 파란 잇몸' },
+      { normal: '크고 돌출된 눈', abnormal: '눈을 자꾸 비비거나, 눈이 더 튀어나온 느낌' },
+    ],
+    risks: { '호흡기': 85, '각막': 80, '슬개골': 65, '피부감염': 70, '비만': 60 },
+    care: '여름철 외출 최소화. 코 주름 매일 청결 관리. 눈 이물질 즉시 제거. 과체중 주의.',
+    vet_note: '단두종 수술(연구개절제술 등)을 권유받았다면, 현재 증상이 일상생활에 얼마나 영향을 주는지가 판단 기준입니다. 가벼운 코골이만으로는 수술 필요 없습니다.',
+  },
+  {
+    id: 5,
+    name: '비숑 프리제', eng: 'Bichon Frisé', emoji: '🐩',
+    category: '소형견',
+    tags: ['소형견', '저알레르기', '활발함'],
+    warn_tags: ['피부 알레르기', '방광 결석'],
+    summary: '곱슬털에 흰색. 알레르기 유발 적어 인기. 활발하고 사교적. 정기 그루밍 필수.',
+    diseases: ['피부 알레르기', '방광 결석', '슬개골 탈구', '외이염', '눈물자국'],
+    normal: [
+      { normal: '털이 빨리 자라 덥수룩해짐', abnormal: '피부 붉음, 발 핥기, 특정 부위 탈모' },
+    ],
+    risks: { '피부알레르기': 80, '방광결석': 70, '슬개골': 65, '외이염': 70 },
+    care: '4~6주마다 그루밍. 발 핥기 지속 시 알레르기 검사 고려. 충분한 수분 섭취로 결석 예방.',
+    vet_note: '발을 지속적으로 핥는다면 식품 알레르기일 가능성이 높습니다. 단백질 원료 바꿔보는 게 첫 단계입니다.',
+  },
+  {
+    id: 6,
+    name: '프렌치 불독', eng: 'French Bulldog', emoji: '🐾',
+    category: '소형견',
+    tags: ['소형견', '단두종', '근육질'],
+    warn_tags: ['호흡기 매우 주의', '척추 주의', '열사병 주의'],
+    summary: '박쥐 귀와 납작 코가 특징. 단두종 중 호흡 문제가 가장 심각한 편. 더위에 매우 취약.',
+    diseases: ['단두종 증후군', '척추 이형성증', '고관절 이형성증', '알레르기', '열사병'],
+    normal: [
+      { normal: '코 고는 소리, 그렁거림', abnormal: '운동 중 쓰러지거나 입 벌리고 과호흡' },
+      { normal: '단단한 근육질 체형', abnormal: '뒷다리 약해짐, 비틀거림' },
+    ],
+    risks: { '호흡기': 95, '척추': 75, '알레르기': 80, '열사병': 90, '고관절': 65 },
+    care: '여름 외출 금지에 가까움. 에어컨 필수. 수영 절대 금지 (익사 위험). 격렬한 운동 금지.',
+    vet_note: '프렌치불독은 단두종 수술을 권유받는 경우가 많습니다. 일상생활에서 입을 벌리고 숨쉬는 빈도, 운동 후 회복 시간을 영상으로 기록해서 2차 의견을 구하는 게 좋습니다.',
+  },
+  {
+    id: 7,
+    name: '골든 리트리버', eng: 'Golden Retriever', emoji: '🦮',
+    category: '대형견',
+    tags: ['대형견', '온순함', '가족견'],
+    warn_tags: ['고관절 주의', '암 위험'],
+    summary: '온화하고 참을성 강함. 대형견 중 가장 인기 높음. 암 발생률이 다른 품종보다 높아 정기 검진 중요.',
+    diseases: ['고관절 이형성증', '암(림프종·골육종)', '피부 알레르기', '귀 감염', '비만'],
+    normal: [
+      { normal: '활발한 운동 후 뻗어서 자기', abnormal: '기상 시 뒷다리 비틀거림, 계단 오르기 거부' },
+      { normal: '몸에 혹이 생겼다 없어짐 (지방종)', abnormal: '빠르게 커지는 혹, 딱딱한 혹' },
+    ],
+    risks: { '고관절': 80, '암': 75, '알레르기': 65, '비만': 70, '귀감염': 60 },
+    care: '8세 이상부터 연 1~2회 전신 검진 권장. 과체중 철저히 관리. 과격한 운동보다 꾸준한 산책.',
+    vet_note: '골든 리트리버는 60%가 암으로 사망한다는 연구가 있습니다. 10세 이상 몸에서 혹이 생기면 세침 검사를 요청하세요. "지켜보자"는 말에 안심하지 마세요.',
+  },
+  {
+    id: 8,
+    name: '라브라도 리트리버', eng: 'Labrador Retriever', emoji: '🐕‍🦺',
+    category: '대형견',
+    tags: ['대형견', '온순함', '활동적'],
+    warn_tags: ['비만 주의', '고관절 주의'],
+    summary: '세계에서 가장 많이 키워지는 견종 중 하나. 먹성이 매우 좋아 비만 위험이 높음.',
+    diseases: ['비만', '고관절 이형성증', '팔꿈치 이형성증', '피부 알레르기', '귀 감염'],
+    normal: [
+      { normal: '항상 배고파함', abnormal: '먹다가 갑자기 멈추거나 식욕 완전 저하' },
+      { normal: '활발하고 점프 좋아함', abnormal: '운동 꺼림, 계단 내려오기 싫어함' },
+    ],
+    risks: { '비만': 90, '고관절': 75, '팔꿈치': 65, '알레르기': 60 },
+    care: '먹이 양 철저히 관리. 관절 보호 위해 딱딱한 바닥보다 부드러운 면 권장. 수영은 매우 좋아하고 관절에도 좋음.',
+    vet_note: '라브라도는 배고픔을 잘 느끼지 못하는 유전적 특성이 있습니다. 수의사가 "더 먹여도 된다"고 해도 비만 기준표를 직접 확인하세요.',
+  },
+  {
+    id: 9,
+    name: '닥스훈트', eng: 'Dachshund', emoji: '🌭',
+    category: '소형견',
+    tags: ['소형견', '사냥견 기질', '독립적'],
+    warn_tags: ['척추 매우 주의', '비만 주의'],
+    summary: '긴 몸과 짧은 다리. 척추 질환 발생률이 전 견종 중 가장 높음. 계단과 점프가 가장 큰 적.',
+    diseases: ['추간판 탈출증(IVDD)', '비만', '패튼병', '당뇨', '청각 장애(달마시안 혼혈)'],
+    normal: [
+      { normal: '낮은 자세로 걷기', abnormal: '뒷다리 끌기, 소변/대변 못 가리기, 갑작스러운 비명' },
+      { normal: '달리기는 잘 함', abnormal: '갑자기 움직이기 싫어하거나 등을 만질 때 비명' },
+    ],
+    risks: { '척추IVDD': 95, '비만': 80, '당뇨': 60 },
+    care: '계단 램프 필수. 소파 점프 금지. 하네스 사용. 체중 관리 최우선. 수영이 척추에 가장 좋은 운동.',
+    vet_note: '닥스훈트가 갑자기 움직이지 않거나 뒷다리가 약해지면 골든타임이 있습니다. 48시간 이내에 치료받아야 회복률이 높습니다. 망설이지 마세요.',
+  },
+  {
+    id: 10,
+    name: '페르시안 고양이', eng: 'Persian', emoji: '🐱',
+    category: '고양이',
+    tags: ['고양이', '장모종', '단두종'],
+    warn_tags: ['호흡기', '신장 주의', '눈 주의'],
+    summary: '납작한 얼굴과 풍성한 털. 온순하고 조용함. 신장 다낭성 질환 유전적 소인.',
+    diseases: ['다낭성 신장 질환(PKD)', '각막 궤양', '호흡 문제', '피부 주름 감염', '치아 문제'],
+    normal: [
+      { normal: '코 그렁거림', abnormal: '입 벌리고 호흡, 파란 잇몸' },
+      { normal: '눈물자국', abnormal: '눈 충혈, 분비물 증가' },
+    ],
+    risks: { 'PKD': 80, '호흡기': 75, '각막': 70, '피부감염': 65 },
+    care: '매일 빗질 필수. 코 주름 청결. 정기 신장 검사 권장 (3세 이상). PKD 유전자 검사 가능.',
+    vet_note: '페르시안은 PKD 유전자 검사를 통해 미리 확인할 수 있습니다. 부모 혈통에 PKD가 있다면 조기 검사 권장.',
+  },
+  {
+    id: 11,
+    name: '러시안 블루', eng: 'Russian Blue', emoji: '🩶',
+    category: '고양이',
+    tags: ['고양이', '단모종', '조용함', '내성적'],
+    warn_tags: ['비만 주의', '방광염 주의'],
+    summary: '청회색 털과 초록 눈. 낯선 사람에게 수줍고 가족에게는 애교 많음. 먹성 좋아 비만 주의.',
+    diseases: ['비만', '하부 요로 질환(FLUTD)', '방광염', '당뇨', '치아 문제'],
+    normal: [
+      { normal: '밥 달라고 강하게 어필', abnormal: '갑자기 식욕 없음, 체중 감소' },
+      { normal: '모래 자주 감', abnormal: '화장실 자주 가는데 소변 못 눔, 소변에 피' },
+    ],
+    risks: { '비만': 80, '방광염': 70, '당뇨': 65, '치아': 60 },
+    care: '자동 급식기 사용 금지 (과식). 습식 사료 병행으로 수분 보충. 물그릇 여러 곳에 두기.',
+    vet_note: '고양이가 화장실에 자주 가는데 소변이 안 나온다면 응급입니다. 24시간 이내 병원에 가세요.',
+  },
+  {
+    id: 12,
+    name: '웰시 코기', eng: 'Welsh Corgi', emoji: '🐕',
+    category: '중형견',
+    tags: ['중형견', '목양견', '활발함'],
+    warn_tags: ['척추 주의', '고관절 주의'],
+    summary: '짧은 다리와 긴 몸. 닥스훈트처럼 척추 질환 위험. 매우 활발하고 지능 높음.',
+    diseases: ['추간판 탈출증', '고관절 이형성증', '진행성 망막 위축(PRA)', '비만', '알레르기'],
+    normal: [
+      { normal: '낮은 자세로 활발히 뛰기', abnormal: '뒷다리 약해짐, 갑자기 움직임 거부' },
+      { normal: '야간 시력 약간 저하 (노령기)', abnormal: '낮에도 물체에 자꾸 부딪힘' },
+    ],
+    risks: { '척추': 80, '고관절': 70, 'PRA': 65, '비만': 70 },
+    care: '계단 최소화. 체중 관리. PRA는 유전자 검사 가능. 지능 높아 정신적 자극 필요.',
+    vet_note: '코기의 PRA(진행성 망막 위축)는 서서히 시력을 잃는 유전 질환입니다. 유전자 검사로 미리 확인할 수 있습니다.',
+  },
+];
+
+let currentCat  = '전체';
+let currentSearch = '';
+
+function selectCat(cat, btn) {
+  currentCat = cat;
+  document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  renderBreeds();
+}
+
+function filterBreeds() {
+  currentSearch = document.getElementById('searchInput').value.trim();
+  renderBreeds();
+}
+
+function renderBreeds() {
+  const grid = document.getElementById('breedGrid');
+
+  let list = BREEDS;
+  if (currentCat !== '전체') list = list.filter(b => b.category === currentCat);
+  if (currentSearch) {
+    const q = currentSearch.toLowerCase();
+    list = list.filter(b =>
+      b.name.includes(q) ||
+      b.eng.toLowerCase().includes(q) ||
+      b.diseases.some(d => d.includes(q)) ||
+      b.tags.some(t => t.includes(q))
+    );
+  }
+
+  if (list.length === 0) {
+    grid.innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🐾</div>
+        <p>검색 결과가 없습니다.<br>다른 품종명으로 검색해보세요.</p>
+      </div>`;
+    return;
+  }
+
+  grid.innerHTML = list.map(b => `
+    <div class="breed-card" onclick="openModal(${b.id})">
+      <div class="breed-card-top">
+        <div class="breed-emoji">${b.emoji}</div>
+        <div class="breed-name">${b.name}</div>
+        <div class="breed-eng">${b.eng}</div>
+        <div class="breed-tags">
+          ${b.tags.map(t => `<span class="breed-tag">${t}</span>`).join('')}
+          ${b.warn_tags.map(t => `<span class="breed-tag warn">⚠️ ${t}</span>`).join('')}
+        </div>
+      </div>
+      <div class="breed-card-body">
+        <div class="breed-summary">${b.summary}</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text-dim);margin-bottom:6px;letter-spacing:0.05em">주의 질환</div>
+        <ul class="breed-disease-list">
+          ${b.diseases.slice(0, 3).map(d => `<li>${d}</li>`).join('')}
+        </ul>
+        <span class="breed-more">자세히 보기 →</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openModal(id) {
+  const b = BREEDS.find(x => x.id === id);
+  if (!b) return;
+
+  document.getElementById('mEmoji').textContent = b.emoji;
+  document.getElementById('mName').textContent  = b.name;
+  document.getElementById('mEng').textContent   = b.eng;
+
+  const riskBars = Object.entries(b.risks).map(([label, val]) => {
+    const color = val >= 80 ? '#c0392b' : val >= 65 ? '#e07b39' : '#2d6a4f';
+    return `
+      <div class="risk-row">
+        <span class="risk-label">${label}</span>
+        <div class="risk-bar-bg">
+          <div class="risk-bar-fill" style="width:${val}%;background:${color}"></div>
+        </div>
+        <span class="risk-level">${val}</span>
+      </div>`;
+  }).join('');
+
+  const checkRows = b.normal.map(r => `
+    <tr>
+      <td>✅ ${r.normal}</td>
+      <td>🚨 ${r.abnormal}</td>
+    </tr>`).join('');
+
+  document.getElementById('mBody').innerHTML = `
+    <div class="modal-section">
+      <div class="modal-section-title">품종 특성</div>
+      <div class="modal-text">${b.summary}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">질환 위험도</div>
+      <div class="risk-bars">${riskBars}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">정상 vs 병원 가야 할 때</div>
+      <table class="check-table">
+        <thead>
+          <tr>
+            <th>✅ 정상 (이건 괜찮아요)</th>
+            <th>🚨 병원 가야 해요</th>
+          </tr>
+        </thead>
+        <tbody>${checkRows}</tbody>
+      </table>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title">관리 포인트</div>
+      <div class="modal-text">${b.care}</div>
+    </div>
+
+    <div class="modal-section">
+      <div class="modal-section-title" style="color:var(--orange)">⚠️ 병원에서 알아야 할 것</div>
+      <div class="modal-text" style="background:var(--orange-pale);padding:16px;border-radius:8px;color:#9a4f10">
+        ${b.vet_note}
+      </div>
+    </div>
+  `;
+
+  document.getElementById('modalOverlay').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  document.getElementById('modalOverlay').classList.remove('show');
+  document.body.style.overflow = '';
+}
+
+renderBreeds();
+</script>
+
+</body>
+</html>
