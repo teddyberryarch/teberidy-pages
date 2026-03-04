@@ -1472,6 +1472,8 @@ function restoreForm(data) {
     });
   }
 }
+// ── 단계 이동
+function goStep(n) {
   // done 단계(이미 완료)는 자유롭게 이동 가능, 아직 안 간 앞 단계는 금지
   const el = document.querySelector(`.progress-step[data-step="${n}"]`);
   if (n > currentStep && !el?.classList.contains('done')) return;
