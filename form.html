@@ -456,7 +456,7 @@ input[type="range"] {
   </div>
 
   <div class="field">
-    <label class="field-label required">취득가</label>
+    <label class="field-label required">취득가 <span class="unit-badge">단위: 백만원</span></label>
     <input type="text" id="acquisition_price" placeholder="예: 500" oninput="showMoneyPreview('acquisition_price')">
     <div id="acquisition_price_preview" class="money-preview"></div>
     <p class="field-hint">실제 구입금액 (취득세·부대비용 제외)</p>
@@ -1636,50 +1636,51 @@ document.getElementById('agree_disclaimer').addEventListener('change', function(
 // ── 금액 파싱: 백만원 단위 입력 → 만원 단위 숫자로 변환
 // 입력: "16" → 16억(160,000만원), "16.5" → 16억5천, "1600" → 16억
 // 단위: 백만원 (예: 16 = 16억, 1.6 = 1억6천만)
+// ── 금액 파싱
+// 입력: 백만원 단위 숫자 (예: 1600 → 16억)
+// 또는 한글 (예: 16억, 1억5천)
+// 반환: 백만원 단위 숫자 (서버로 전송용)
 function parseMoney(str) {
   if (!str) return '';
   str = str.trim().replace(/,/g, '').replace(/\s/g, '');
-  // 순수 숫자(소수 포함) → 백만원 단위로 해석 → 만원으로 변환
+
+  // 순수 숫자 → 백만원 단위 그대로 반환
   if (/^\d+(\.\d+)?$/.test(str)) {
-    return String(Math.round(parseFloat(str) * 100)); // 백만원 × 100 = 만원
+    return String(Math.round(parseFloat(str)));
   }
-  // 한글 표기 (억/천만/만 등) → 만원으로 변환
+
+  // 한글 표기 → 백만원 단위로 변환
   let total = 0;
-  const jo = str.match(/(\d+\.?\d*)조/);
-  if (jo) total += parseFloat(jo[1]) * 1_000_000;
   const eok = str.match(/(\d+\.?\d*)억/);
-  if (eok) total += parseFloat(eok[1]) * 10_000;
+  if (eok) total += parseFloat(eok[1]) * 100; // 1억 = 100백만원
   const chunman = str.match(/(\d+\.?\d*)천만/);
-  if (chunman) total += parseFloat(chunman[1]) * 1_000;
+  if (chunman) total += parseFloat(chunman[1]) * 10;
   else {
-    const chun = str.match(/억(\d+\.?\d*)천(?!만)/);
-    if (chun) total += parseFloat(chun[1]) * 1_000;
+    const chun = str.match(/억(\d+\.?\d*)천/);
+    if (chun) total += parseFloat(chun[1]) * 10;
     else {
-      const chunOnly = str.match(/^(\d+\.?\d*)천(?!만)/);
-      if (chunOnly) total += parseFloat(chunOnly[1]) * 1_000;
+      const chunOnly = str.match(/^(\d+\.?\d*)천/);
+      if (chunOnly) total += parseFloat(chunOnly[1]) * 10;
     }
   }
   const man = str.match(/(\d+\.?\d*)만/);
-  if (man) total += parseFloat(man[1]);
+  if (man) total += parseFloat(man[1]) / 100; // 100만 = 1백만
   return total > 0 ? String(Math.round(total)) : str;
 }
 
-// 백만원 단위 → 읽기 쉬운 한글 금액
-function formatWon(manwon) {
-  // 입력: 만원 단위 숫자 → "16억원", "8억 5천만원" 형태 출력
-  if (!manwon || isNaN(manwon) || manwon <= 0) return '';
-  manwon = Math.round(manwon);
-  const eok = Math.floor(manwon / 10000);
-  const remain = manwon % 10000;
-  const chun = Math.floor(remain / 1000);
-  const baek = Math.floor((remain % 1000) / 100);
-  const ship = remain % 100;
+// 백만원 단위 숫자 → 한글 표시
+// 예: 1600 → "16억원", 850 → "8억 5천만원", 50 → "5천만원"
+function formatWon(baengman) {
+  if (!baengman || isNaN(baengman) || baengman <= 0) return '';
+  baengman = Math.round(baengman);
+  const eok  = Math.floor(baengman / 100);       // 100백만 = 1억
+  const chun = Math.floor((baengman % 100) / 10); // 10백만 = 1천만
+  const rest = baengman % 10;                     // 나머지 (백만 단위)
 
   let result = '';
-  if (eok > 0) result += eok + '억 ';
-  if (chun > 0) result += chun + '천';
-  if (baek > 0) result += baek + '백';
-  if (ship > 0) result += ship + '만';
+  if (eok  > 0) result += eok + '억 ';
+  if (chun > 0) result += chun + '천만 ';
+  if (rest > 0) result += rest + '백만 ';
   return result.trim() + '원';
 }
 
@@ -1691,13 +1692,14 @@ function showMoneyPreview(id) {
   if (!preview) return;
   const raw = el.value.trim();
   if (!raw) {
-    preview.textContent = '숫자를 입력하면 금액이 표시됩니다';
+    preview.textContent = '숫자 입력 시 금액이 표시됩니다';
     preview.style.color = '#444';
+    preview.style.fontSize = '14px';
     return;
   }
-  const manwon = parseInt(parseMoney(raw));
-  if (manwon > 0) {
-    preview.textContent = '→ ' + formatWon(manwon);
+  const val = parseInt(parseMoney(raw));
+  if (val > 0) {
+    preview.textContent = '→ ' + formatWon(val);
     preview.style.color = 'var(--gold)';
     preview.style.fontSize = '19px';
   } else {
