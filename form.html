@@ -1,0 +1,1899 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>판단 — 보유 부동산 의사결정 리포트</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;600&family=Noto+Sans+KR:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+:root {
+  --bg: #0f0f0d;
+  --surface: #1a1a17;
+  --border: rgba(201,168,76,0.15);
+  --gold: #c9a84c;
+  --gold-dim: rgba(201,168,76,0.4);
+  --fg: #e8e4d8;
+  --dim: rgba(232,228,216,0.45);
+  --danger: #e05c5c;
+}
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Noto Sans KR', sans-serif;
+  min-height: 100vh;
+  line-height: 1.7;
+}
+
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 80px 24px 60px;
+  border-bottom: 1px solid var(--border);
+}
+.header-tag {
+  font-size: 11px; letter-spacing: .4em; text-transform: uppercase;
+  color: var(--gold); margin-bottom: 24px;
+}
+.header h1 {
+  font-family: 'Noto Serif KR', serif;
+  font-size: clamp(42px, 8vw, 80px);
+  font-weight: 300; letter-spacing: -.02em;
+  color: var(--fg); margin-bottom: 20px;
+}
+.header-sub {
+  font-size: 15px; color: var(--dim); line-height: 2;
+}
+.header-price {
+  display: inline-block; margin-top: 28px;
+  font-family: 'Noto Serif KR', serif;
+  font-size: 22px; color: var(--gold);
+  border: 1px solid var(--gold-dim);
+  padding: 10px 32px; border-radius: 2px;
+}
+
+/* PROGRESS */
+.progress-wrap {
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(15,15,13,0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 40px;
+  display: flex; align-items: center; gap: 0;
+}
+.progress-step {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; letter-spacing: .12em;
+  color: var(--dim); flex: 1;
+  cursor: pointer; transition: color .3s;
+}
+.progress-step.active { color: var(--gold); }
+.progress-step.done { color: var(--fg); }
+.step-num {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 1px solid currentColor;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px; flex-shrink: 0;
+  transition: background .3s;
+}
+.progress-step.active .step-num { background: var(--gold); border-color: var(--gold); color: #0f0f0d; }
+.progress-step.done .step-num { background: var(--fg); border-color: var(--fg); color: #0f0f0d; }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; }
+.step-line.done { background: var(--gold-dim); }
+
+/* FORM CONTAINER */
+.form-wrap { max-width: 720px; margin: 0 auto; padding: 0 24px 120px; }
+
+/* STEP SECTION */
+.step-section {
+  display: none;
+  padding: 60px 0 40px;
+  animation: fadeUp .5s cubic-bezier(.16,1,.3,1) forwards;
+}
+.step-section.active { display: block; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(20px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+.step-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 26px; font-weight: 300;
+  color: var(--fg); margin-bottom: 8px;
+}
+.step-desc {
+  font-size: 13px; color: var(--dim);
+  margin-bottom: 40px; line-height: 1.8;
+}
+
+/* FIELD */
+.field { margin-bottom: 32px; }
+.field-label {
+  display: block; font-size: 13px; letter-spacing: .06em;
+  color: var(--dim); margin-bottom: 10px;
+}
+.field-label.required::after {
+  content: ' *'; color: var(--gold); font-size: 11px;
+}
+.field-hint {
+  font-size: 11px; color: rgba(232,228,216,0.3);
+  margin-top: 6px; line-height: 1.6;
+}
+
+/* INPUT */
+input[type="text"],
+input[type="email"],
+input[type="number"],
+select,
+textarea {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  color: var(--fg);
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 15px;
+  padding: 14px 18px;
+  outline: none;
+  transition: border-color .3s;
+  -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--gold);
+}
+input::placeholder, textarea::placeholder { color: var(--dim); }
+select option { background: var(--surface); }
+textarea { resize: vertical; min-height: 90px; }
+
+/* RADIO / CHECKBOX GROUP */
+.radio-group, .check-group {
+  display: flex; flex-wrap: wrap; gap: 10px;
+}
+.radio-group.col, .check-group.col {
+  flex-direction: column; gap: 8px;
+}
+.radio-item, .check-item {
+  position: relative;
+}
+.radio-item input, .check-item input {
+  position: absolute; opacity: 0; width: 0; height: 0;
+}
+.radio-item label, .check-item label {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  font-size: 14px; color: var(--dim);
+  cursor: pointer; transition: all .25s;
+  min-width: 120px;
+}
+.radio-item input:checked + label,
+.check-item input:checked + label {
+  border-color: var(--gold);
+  color: var(--fg);
+  background: rgba(201,168,76,0.06);
+}
+.radio-dot, .check-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  border: 1px solid currentColor; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+}
+.check-dot { border-radius: 3px; }
+.check-box {
+  width: 16px; height: 16px; border-radius: 3px;
+  border: 1.5px solid var(--gold-dim); flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-right: 2px; transition: border-color .2s;
+}
+.radio-item input[type="checkbox"]:checked + label .check-box {
+  border-color: var(--gold); background: var(--gold);
+}
+.radio-item input[type="checkbox"]:checked + label .check-box::after {
+  content: '✓'; font-size: 10px; color: #0f0f0d; font-weight: 700;
+}
+.radio-item input:checked + label .radio-dot::after {
+  content: ''; width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gold); display: block;
+}
+.check-item input:checked + label .check-dot::after {
+  content: '✓'; font-size: 9px; color: var(--gold);
+}
+
+/* UNIT BADGE */
+.unit-badge {
+  display: inline-block;
+  font-size: 11px;
+  color: #888;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid #333;
+  border-radius: 3px;
+  padding: 1px 7px;
+  margin-left: 6px;
+  vertical-align: middle;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+/* MONEY PREVIEW */
+.money-preview {
+  font-size: 17px;
+  color: #444;
+  margin-top: 5px;
+  min-height: 22px;
+  font-family: 'Noto Serif KR', serif;
+}
+
+/* DATE SELECT */
+select.date-select {
+  background: var(--input-bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 12px 14px;
+  border-radius: 6px;
+  font-size: 17px;
+  font-family: inherit;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23c9a84c' stroke-width='1.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+select.date-select:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+select.date-select option {
+  background: #1a1a18;
+  color: var(--fg);
+}
+.conditional {
+  display: none;
+  border-left: 2px solid var(--gold-dim);
+  padding-left: 24px;
+  margin-top: 16px;
+}
+.conditional.show { display: block; }
+
+/* DIVIDER */
+.field-divider {
+  height: 1px; background: var(--border);
+  margin: 36px 0;
+}
+
+/* RANGE */
+.range-wrap { display: flex; align-items: center; gap: 16px; }
+input[type="range"] {
+  flex: 1; background: transparent; border: none; padding: 0;
+  accent-color: var(--gold);
+}
+.range-val {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 18px; color: var(--gold); min-width: 60px; text-align: right;
+}
+
+/* BUTTONS */
+.btn-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 40px; border-top: 1px solid var(--border);
+  margin-top: 40px;
+}
+.btn {
+  font-family: 'Noto Sans KR', sans-serif;
+  font-size: 12px; letter-spacing: .25em;
+  padding: 14px 36px; border-radius: 2px;
+  cursor: pointer; transition: all .3s;
+  border: 1px solid;
+}
+.btn-save {
+  background: var(--gold);
+  color: #0f0f0d;
+  border: 2px solid var(--gold);
+  font-weight: 700;
+  font-size: 17px;
+  padding: 14px 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+  letter-spacing: 1px;
+}
+.btn-save:hover { background: #e0ba5a; border-color: #e0ba5a; }
+.btn-save.saved {
+  background: #1a3a1a;
+  color: #7fff7f;
+  border-color: #3a7a3a;
+}
+.btn-save.saved::before { content: '✓ 저장됨  '; }
+.btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-prev {
+  background: transparent; border-color: var(--border);
+  color: var(--dim);
+}
+.btn-prev:hover { border-color: var(--fg); color: var(--fg); }
+.btn-next {
+  background: var(--gold); border-color: var(--gold);
+  color: #0f0f0d; font-weight: 500;
+}
+.btn-next:hover { background: #e0ba5a; border-color: #e0ba5a; }
+.btn-submit {
+  background: var(--gold); border-color: var(--gold);
+  color: #0f0f0d; font-weight: 500;
+  width: 100%; padding: 18px;
+  font-size: 14px; letter-spacing: .2em;
+}
+.btn-submit:hover { background: #e0ba5a; }
+.btn-submit:disabled { opacity: .5; cursor: not-allowed; }
+
+/* ERROR */
+.error-msg {
+  display: none; color: var(--danger);
+  font-size: 12px; margin-top: 6px;
+}
+.field.has-error input,
+.field.has-error select,
+.field.has-error textarea { border-color: var(--danger); }
+.field.has-error .error-msg { display: block; }
+
+/* SUCCESS */
+.success-screen {
+  display: none; text-align: center;
+  padding: 100px 24px;
+}
+.success-screen.show { display: block; }
+.success-icon {
+  font-size: 48px; margin-bottom: 32px;
+}
+.success-title {
+  font-family: 'Noto Serif KR', serif;
+  font-size: 32px; font-weight: 300;
+  color: var(--fg); margin-bottom: 16px;
+}
+.success-desc { font-size: 15px; color: var(--dim); line-height: 2; }
+
+/* NOTICE BOX */
+.notice {
+  background: rgba(201,168,76,0.06);
+  border: 1px solid var(--gold-dim);
+  border-radius: 3px;
+  padding: 16px 20px;
+  font-size: 13px; color: var(--dim);
+  margin-bottom: 28px; line-height: 1.8;
+}
+.notice strong { color: var(--gold); }
+
+@media(max-width: 600px) {
+  .progress-wrap { padding: 12px 16px; }
+  .progress-step span { display: none; }
+  .header { padding: 60px 20px 40px; }
+  .radio-group { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">베러비전 · 부동산 의사결정</div>
+  <h1>판단</h1>
+  <p class="header-sub">
+    이미 부동산을 가진 사람이<br>
+    "지금 어떻게 해야 하나"를 판단할 수 있게 도와드립니다.<br>
+    예측이 아닙니다. 지금 가진 것의 최적화입니다.
+  </p>
+  <div class="header-price">149,000원</div>
+</div>
+
+<!-- PROGRESS -->
+<div class="progress-wrap" id="progressBar">
+  <div class="progress-step active" data-step="1" onclick="goStep(1)">
+    <div class="step-num">1</div>
+    <span>기본 정보</span>
+  </div>
+  <div class="step-line" id="line-1"></div>
+  <div class="progress-step" data-step="2" onclick="goStep(2)">
+    <div class="step-num">2</div>
+    <span>보유 현황</span>
+  </div>
+  <div class="step-line" id="line-2"></div>
+  <div class="progress-step" data-step="3" onclick="goStep(3)">
+    <div class="step-num">3</div>
+    <span>취득 상황</span>
+  </div>
+  <div class="step-line" id="line-3"></div>
+  <div class="progress-step" data-step="4" onclick="goStep(4)">
+    <div class="step-num">4</div>
+    <span>세대·거주</span>
+  </div>
+  <div class="step-line" id="line-4"></div>
+  <div class="progress-step" data-step="5" onclick="goStep(5)">
+    <div class="step-num">5</div>
+    <span>특수 상황</span>
+  </div>
+  <div class="step-line" id="line-5"></div>
+  <div class="progress-step" data-step="6" onclick="goStep(6)">
+    <div class="step-num">6</div>
+    <span>원하는 결과</span>
+  </div>
+  <div class="step-line" id="line-6"></div>
+  <div class="progress-step" data-step="7" onclick="goStep(7)">
+    <div class="step-num">7</div>
+    <span>연락처</span>
+  </div>
+</div>
+
+<div class="form-wrap">
+
+<!-- ═══════════════════════════════════════════
+     STEP 1 — 기본 정보
+════════════════════════════════════════════ -->
+<div class="step-section active" id="step-1">
+  <div class="step-title">보유 부동산 기본 정보</div>
+  <div class="step-desc">분석 대상 부동산의 기본 현황을 입력해 주세요.</div>
+
+  <div class="field">
+    <label class="field-label required">부동산 유형</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="property_type" id="pt1" value="아파트"><label for="pt1"><span class="radio-dot"></span>아파트</label></div>
+      <div class="radio-item"><input type="radio" name="property_type" id="pt2" value="빌라/연립"><label for="pt2"><span class="radio-dot"></span>빌라/연립</label></div>
+      <div class="radio-item"><input type="radio" name="property_type" id="pt3" value="단독주택"><label for="pt3"><span class="radio-dot"></span>단독주택</label></div>
+      <div class="radio-item"><input type="radio" name="property_type" id="pt4" value="오피스텔"><label for="pt4"><span class="radio-dot"></span>오피스텔</label></div>
+      <div class="radio-item"><input type="radio" name="property_type" id="pt5" value="상가/업무용"><label for="pt5"><span class="radio-dot"></span>상가/업무용</label></div>
+      <div class="radio-item"><input type="radio" name="property_type" id="pt6" value="토지"><label for="pt6"><span class="radio-dot"></span>토지</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">소재지 (시/구 수준)</label>
+    <input type="text" id="location" placeholder="예: 서울시 강남구, 경기도 성남시 분당구">
+  </div>
+
+  <div class="field">
+    <label class="field-label required">현재 시장가치 <span class="unit-badge">단위: 백만원</span></label>
+    <input type="text" id="current_value" placeholder="예: 1600" oninput="showMoneyPreview('current_value')">
+    <div id="current_value_preview" class="money-preview"></div>
+    <p class="field-hint">KB시세, 호가, 공시지가 중 가장 현실적인 금액 기준</p>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">취득가</label>
+    <input type="text" id="acquisition_price" placeholder="예: 500" oninput="showMoneyPreview('acquisition_price')">
+    <div id="acquisition_price_preview" class="money-preview"></div>
+    <p class="field-hint">실제 구입금액 (취득세·부대비용 제외)</p>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">취득 연월</label>
+    <div style="display:flex;gap:8px;">
+        <select id="acquisition_date_year" class="date-select">
+          <option value="">연도 선택</option>
+          <option value="1980">1980년</option>
+          <option value="1981">1981년</option>
+          <option value="1982">1982년</option>
+          <option value="1983">1983년</option>
+          <option value="1984">1984년</option>
+          <option value="1985">1985년</option>
+          <option value="1986">1986년</option>
+          <option value="1987">1987년</option>
+          <option value="1988">1988년</option>
+          <option value="1989">1989년</option>
+          <option value="1990">1990년</option>
+          <option value="1991">1991년</option>
+          <option value="1992">1992년</option>
+          <option value="1993">1993년</option>
+          <option value="1994">1994년</option>
+          <option value="1995">1995년</option>
+          <option value="1996">1996년</option>
+          <option value="1997">1997년</option>
+          <option value="1998">1998년</option>
+          <option value="1999">1999년</option>
+          <option value="2000">2000년</option>
+          <option value="2001">2001년</option>
+          <option value="2002">2002년</option>
+          <option value="2003">2003년</option>
+          <option value="2004">2004년</option>
+          <option value="2005">2005년</option>
+          <option value="2006">2006년</option>
+          <option value="2007">2007년</option>
+          <option value="2008">2008년</option>
+          <option value="2009">2009년</option>
+          <option value="2010">2010년</option>
+          <option value="2011">2011년</option>
+          <option value="2012">2012년</option>
+          <option value="2013">2013년</option>
+          <option value="2014">2014년</option>
+          <option value="2015">2015년</option>
+          <option value="2016">2016년</option>
+          <option value="2017">2017년</option>
+          <option value="2018">2018년</option>
+          <option value="2019">2019년</option>
+          <option value="2020">2020년</option>
+          <option value="2021">2021년</option>
+          <option value="2022">2022년</option>
+          <option value="2023">2023년</option>
+          <option value="2024">2024년</option>
+          <option value="2025">2025년</option>
+          <option value="2026">2026년</option>
+        </select>
+        <select id="acquisition_date_month" class="date-select">
+          <option value="">월 선택</option>
+          <option value="1">1월</option>
+          <option value="2">2월</option>
+          <option value="3">3월</option>
+          <option value="4">4월</option>
+          <option value="5">5월</option>
+          <option value="6">6월</option>
+          <option value="7">7월</option>
+          <option value="8">8월</option>
+          <option value="9">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">전체 보유 주택 수 (본인 + 배우자 합산, 전국 기준)</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="total_houses" id="th1" value="1" onchange="toggleMultiHouse()"><label for="th1"><span class="radio-dot"></span>1주택</label></div>
+      <div class="radio-item"><input type="radio" name="total_houses" id="th2" value="2" onchange="toggleMultiHouse()"><label for="th2"><span class="radio-dot"></span>2주택</label></div>
+      <div class="radio-item"><input type="radio" name="total_houses" id="th3" value="3" onchange="toggleMultiHouse()"><label for="th3"><span class="radio-dot"></span>3주택 이상</label></div>
+    </div>
+
+    <!-- 다주택 시 -->
+    <div class="conditional" id="cond_multi_house">
+      <div class="field">
+        <label class="field-label">다른 주택들의 소재지 및 취득연도 (간략히)</label>
+        <textarea id="other_houses" placeholder="예: 경기도 수원시 2020년 취득, 서울 노원구 2015년 취득"></textarea>
+      </div>
+      <div class="field">
+        <label class="field-label">일시적 2주택 해당 여부</label>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" name="temp_2house" id="t2h1" value="해당"><label for="t2h1"><span class="radio-dot"></span>해당 (신규 취득 후 3년 내 처분 예정)</label></div>
+          <div class="radio-item"><input type="radio" name="temp_2house" id="t2h2" value="해당없음"><label for="t2h2"><span class="radio-dot"></span>해당 없음</label></div>
+          <div class="radio-item"><input type="radio" name="temp_2house" id="t2h3" value="모름"><label for="t2h3"><span class="radio-dot"></span>잘 모름</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">공동명의 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="joint_ownership" id="jo1" value="단독명의"><label for="jo1"><span class="radio-dot"></span>단독명의</label></div>
+      <div class="radio-item"><input type="radio" name="joint_ownership" id="jo2" value="배우자공동명의"><label for="jo2"><span class="radio-dot"></span>배우자 공동명의</label></div>
+      <div class="radio-item"><input type="radio" name="joint_ownership" id="jo3" value="기타공동명의"><label for="jo3"><span class="radio-dot"></span>기타 공동명의</label></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <div></div>
+    <button class="btn btn-save" id="saveBtn1" onclick="saveAndNext(1)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 2 — 보유 현황
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-2">
+  <div class="step-title">보유 현황</div>
+  <div class="step-desc">현재 이 부동산을 어떻게 사용하고 있는지 알려주세요.</div>
+
+  <div class="field">
+    <label class="field-label required">현재 사용 형태</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="usage" id="u1" value="본인거주"><label for="u1"><span class="radio-dot"></span>본인 거주 중</label></div>
+      <div class="radio-item"><input type="radio" name="usage" id="u2" value="임대중"><label for="u2"><span class="radio-dot"></span>임대 중 (전세/월세)</label></div>
+      <div class="radio-item"><input type="radio" name="usage" id="u3" value="공실"><label for="u3"><span class="radio-dot"></span>공실 (비어있음)</label></div>
+      <div class="radio-item"><input type="radio" name="usage" id="u4" value="가족거주"><label for="u4"><span class="radio-dot"></span>가족 거주 (본인 미거주)</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">실제 거주 기간 (본인 기준, 누적)</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry0" value="미거주"><label for="ry0"><span class="radio-dot"></span>거주 안 함</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry1" value="1년미만"><label for="ry1"><span class="radio-dot"></span>1년 미만</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry2" value="1~2년"><label for="ry2"><span class="radio-dot"></span>1~2년</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry3" value="2~3년"><label for="ry3"><span class="radio-dot"></span>2~3년</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry4" value="3~5년"><label for="ry4"><span class="radio-dot"></span>3~5년</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry5" value="5~10년"><label for="ry5"><span class="radio-dot"></span>5~10년</label></div>
+      <div class="radio-item"><input type="radio" name="residence_years" id="ry6" value="10년이상"><label for="ry6"><span class="radio-dot"></span>10년 이상</label></div>
+    </div>
+    <p class="field-hint">2017년 8월 이후 취득 1주택은 거주 2년 이상이어야 비과세 가능</p>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">현재 담보대출/채무 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="has_debt" id="hd1" value="없음"><label for="hd1"><span class="radio-dot"></span>없음</label></div>
+      <div class="radio-item"><input type="radio" name="has_debt" id="hd2" value="있음" onchange="toggleDebt()"><label for="hd2"><span class="radio-dot"></span>있음</label></div>
+    </div>
+    <div class="conditional" id="cond_debt">
+      <div class="field">
+        <label class="field-label">채무 잔액 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="debt_amount" placeholder="예: 200" oninput="showMoneyPreview('debt_amount')">
+    <div id="debt_amount_preview" class="money-preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">임대사업자 등록 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="rental_business" id="rb1" value="미등록"><label for="rb1"><span class="radio-dot"></span>미등록</label></div>
+      <div class="radio-item"><input type="radio" name="rental_business" id="rb2" value="등록" onchange="toggleRental()"><label for="rb2"><span class="radio-dot"></span>등록</label></div>
+      <div class="radio-item"><input type="radio" name="rental_business" id="rb3" value="말소"><label for="rb3"><span class="radio-dot"></span>등록 후 말소</label></div>
+    </div>
+    <div class="conditional" id="cond_rental">
+      <div class="field">
+        <label class="field-label">의무임대기간 잔여 여부</label>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" name="rental_obligation" id="ro1" value="남음"><label for="ro1"><span class="radio-dot"></span>의무기간 남아있음</label></div>
+          <div class="radio-item"><input type="radio" name="rental_obligation" id="ro2" value="완료"><label for="ro2"><span class="radio-dot"></span>의무기간 완료</label></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">등록 유형</label>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" name="rental_type" id="rt1" value="장기일반"><label for="rt1"><span class="radio-dot"></span>장기일반 민간임대</label></div>
+          <div class="radio-item"><input type="radio" name="rental_type" id="rt2" value="단기"><label for="rt2"><span class="radio-dot"></span>단기 민간임대</label></div>
+          <div class="radio-item"><input type="radio" name="rental_type" id="rt3" value="모름"><label for="rt3"><span class="radio-dot"></span>잘 모름</label></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">법인 보유 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="corp_owned" id="co1" value="개인"><label for="co1"><span class="radio-dot"></span>개인 명의</label></div>
+      <div class="radio-item"><input type="radio" name="corp_owned" id="co2" value="법인"><label for="co2"><span class="radio-dot"></span>법인 명의</label></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-prev" onclick="prevStep(2)">← 이전</button>
+    <button class="btn btn-save" id="saveBtn2" onclick="saveAndNext(2)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 3 — 취득 상황
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-3">
+  <div class="step-title">취득 당시 상황</div>
+  <div class="step-desc">부동산을 취득할 때의 상황입니다. 세금 계산에 중요한 영향을 줍니다.</div>
+
+  <div class="field">
+    <label class="field-label required">취득 방법</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="acquisition_method" id="am1" value="매매"><label for="am1"><span class="radio-dot"></span>매매 (직접 구입)</label></div>
+      <div class="radio-item"><input type="radio" name="acquisition_method" id="am2" value="증여" onchange="toggleGiftAcq()"><label for="am2"><span class="radio-dot"></span>증여로 취득</label></div>
+      <div class="radio-item"><input type="radio" name="acquisition_method" id="am3" value="상속" onchange="toggleGiftAcq()"><label for="am3"><span class="radio-dot"></span>상속으로 취득</label></div>
+      <div class="radio-item"><input type="radio" name="acquisition_method" id="am4" value="분양"><label for="am4"><span class="radio-dot"></span>분양 (신규 분양)</label></div>
+      <div class="radio-item"><input type="radio" name="acquisition_method" id="am5" value="입주권"><label for="am5"><span class="radio-dot"></span>입주권/분양권 취득</label></div>
+    </div>
+    <div class="conditional" id="cond_gift_acq">
+      <div class="field">
+        <label class="field-label">취득 당시 증여/상속 평가액 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="gift_acq_value" placeholder="예: 400" oninput="showMoneyPreview('gift_acq_value')">
+    <div id="gift_acq_value_preview" class="money-preview"></div>
+        <p class="field-hint">취득 당시 기준시가 또는 감정평가액</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">취득 당시 조정대상지역 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="acq_regulated" id="ar1" value="조정대상지역"><label for="ar1"><span class="radio-dot"></span>조정대상지역이었음</label></div>
+      <div class="radio-item"><input type="radio" name="acq_regulated" id="ar2" value="비조정지역"><label for="ar2"><span class="radio-dot"></span>비조정대상지역이었음</label></div>
+      <div class="radio-item"><input type="radio" name="acq_regulated" id="ar3" value="모름"><label for="ar3"><span class="radio-dot"></span>잘 모름</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">현재 조정대상지역 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="curr_regulated" id="cr1" value="조정대상지역"><label for="cr1"><span class="radio-dot"></span>현재 조정대상지역</label></div>
+      <div class="radio-item"><input type="radio" name="curr_regulated" id="cr2" value="비조정지역"><label for="cr2"><span class="radio-dot"></span>현재 비조정대상지역</label></div>
+      <div class="radio-item"><input type="radio" name="curr_regulated" id="cr3" value="모름"><label for="cr3"><span class="radio-dot"></span>잘 모름</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">재개발/재건축 관련 여부</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="redevelopment" id="rd1" value="해당없음" onchange="toggleRedev()"><label for="rd1"><span class="radio-dot"></span>해당 없음</label></div>
+      <div class="radio-item"><input type="radio" name="redevelopment" id="rd2" value="구역지정" onchange="toggleRedev()"><label for="rd2"><span class="radio-dot"></span>재개발/재건축 구역 지정됨</label></div>
+      <div class="radio-item"><input type="radio" name="redevelopment" id="rd3" value="관리처분인가" onchange="toggleRedev()"><label for="rd3"><span class="radio-dot"></span>관리처분인가 완료</label></div>
+      <div class="radio-item"><input type="radio" name="redevelopment" id="rd4" value="조합원입주권" onchange="toggleRedev()"><label for="rd4"><span class="radio-dot"></span>조합원 입주권 보유</label></div>
+      <div class="radio-item"><input type="radio" name="redevelopment" id="rd5" value="완공후입주" onchange="toggleRedev()"><label for="rd5"><span class="radio-dot"></span>완공 후 입주 (실거주 중)</label></div>
+    </div>
+    <div class="conditional" id="cond_redev">
+      <div class="field">
+        <label class="field-label">종전주택 실제 매입가 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="redev_original_price" placeholder="예: 230" oninput="showMoneyPreview('redev_original_price')">
+    <div id="redev_original_price_preview" class="money-preview"></div>
+        <p class="field-hint">재개발 구역 내 집을 처음 살 때 지불한 금액</p>
+      </div>
+      <div class="field">
+        <label class="field-label">프리미엄(웃돈) 여부 및 금액</label>
+        <div class="radio-group">
+          <div class="radio-item"><input type="radio" name="redev_premium" id="rp1" value="있음" onchange="toggleRedevPremium()"><label for="rp1"><span class="radio-dot"></span>프리미엄 있음</label></div>
+          <div class="radio-item"><input type="radio" name="redev_premium" id="rp2" value="없음" onchange="toggleRedevPremium()"><label for="rp2"><span class="radio-dot"></span>프리미엄 없음</label></div>
+        </div>
+        <div class="conditional" id="cond_redev_premium">
+          <input type="text" id="redev_premium_amount" placeholder="예: 200" oninput="showMoneyPreview('redev_premium_amount')">
+    <div id="redev_premium_amount_preview" class="money-preview"></div>
+        </div>
+      </div>
+      <div class="field">
+        <label class="field-label">조합원 분양가 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="redev_allotment_price" placeholder="예: 580" oninput="showMoneyPreview('redev_allotment_price')">
+    <div id="redev_allotment_price_preview" class="money-preview"></div>
+      </div>
+      <div class="field">
+        <label class="field-label">감정평가 인정액 (권리가액) <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="redev_assessed_value" placeholder="예: 200" oninput="showMoneyPreview('redev_assessed_value')">
+    <div id="redev_assessed_value_preview" class="money-preview"></div>
+        <p class="field-hint">분양가에서 차감해주는 금액 (권리가액)</p>
+      </div>
+      <div class="field">
+        <label class="field-label">관리처분인가일</label>
+        <div style="display:flex;gap:8px;">
+        <select id="redev_mgmt_date_year" class="date-select">
+          <option value="">연도 선택</option>
+          <option value="1980">1980년</option>
+          <option value="1981">1981년</option>
+          <option value="1982">1982년</option>
+          <option value="1983">1983년</option>
+          <option value="1984">1984년</option>
+          <option value="1985">1985년</option>
+          <option value="1986">1986년</option>
+          <option value="1987">1987년</option>
+          <option value="1988">1988년</option>
+          <option value="1989">1989년</option>
+          <option value="1990">1990년</option>
+          <option value="1991">1991년</option>
+          <option value="1992">1992년</option>
+          <option value="1993">1993년</option>
+          <option value="1994">1994년</option>
+          <option value="1995">1995년</option>
+          <option value="1996">1996년</option>
+          <option value="1997">1997년</option>
+          <option value="1998">1998년</option>
+          <option value="1999">1999년</option>
+          <option value="2000">2000년</option>
+          <option value="2001">2001년</option>
+          <option value="2002">2002년</option>
+          <option value="2003">2003년</option>
+          <option value="2004">2004년</option>
+          <option value="2005">2005년</option>
+          <option value="2006">2006년</option>
+          <option value="2007">2007년</option>
+          <option value="2008">2008년</option>
+          <option value="2009">2009년</option>
+          <option value="2010">2010년</option>
+          <option value="2011">2011년</option>
+          <option value="2012">2012년</option>
+          <option value="2013">2013년</option>
+          <option value="2014">2014년</option>
+          <option value="2015">2015년</option>
+          <option value="2016">2016년</option>
+          <option value="2017">2017년</option>
+          <option value="2018">2018년</option>
+          <option value="2019">2019년</option>
+          <option value="2020">2020년</option>
+          <option value="2021">2021년</option>
+          <option value="2022">2022년</option>
+          <option value="2023">2023년</option>
+          <option value="2024">2024년</option>
+          <option value="2025">2025년</option>
+          <option value="2026">2026년</option>
+        </select>
+        <select id="redev_mgmt_date_month" class="date-select">
+          <option value="">월 선택</option>
+          <option value="1">1월</option>
+          <option value="2">2월</option>
+          <option value="3">3월</option>
+          <option value="4">4월</option>
+          <option value="5">5월</option>
+          <option value="6">6월</option>
+          <option value="7">7월</option>
+          <option value="8">8월</option>
+          <option value="9">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
+      </div>
+      <div class="field" id="field_redev_move_in" style="display:none">
+        <label class="field-label">완공 후 입주일 (실거주 시작일)</label>
+        <div style="display:flex;gap:8px;">
+        <select id="redev_move_in_date_year" class="date-select">
+          <option value="">연도 선택</option>
+          <option value="1980">1980년</option>
+          <option value="1981">1981년</option>
+          <option value="1982">1982년</option>
+          <option value="1983">1983년</option>
+          <option value="1984">1984년</option>
+          <option value="1985">1985년</option>
+          <option value="1986">1986년</option>
+          <option value="1987">1987년</option>
+          <option value="1988">1988년</option>
+          <option value="1989">1989년</option>
+          <option value="1990">1990년</option>
+          <option value="1991">1991년</option>
+          <option value="1992">1992년</option>
+          <option value="1993">1993년</option>
+          <option value="1994">1994년</option>
+          <option value="1995">1995년</option>
+          <option value="1996">1996년</option>
+          <option value="1997">1997년</option>
+          <option value="1998">1998년</option>
+          <option value="1999">1999년</option>
+          <option value="2000">2000년</option>
+          <option value="2001">2001년</option>
+          <option value="2002">2002년</option>
+          <option value="2003">2003년</option>
+          <option value="2004">2004년</option>
+          <option value="2005">2005년</option>
+          <option value="2006">2006년</option>
+          <option value="2007">2007년</option>
+          <option value="2008">2008년</option>
+          <option value="2009">2009년</option>
+          <option value="2010">2010년</option>
+          <option value="2011">2011년</option>
+          <option value="2012">2012년</option>
+          <option value="2013">2013년</option>
+          <option value="2014">2014년</option>
+          <option value="2015">2015년</option>
+          <option value="2016">2016년</option>
+          <option value="2017">2017년</option>
+          <option value="2018">2018년</option>
+          <option value="2019">2019년</option>
+          <option value="2020">2020년</option>
+          <option value="2021">2021년</option>
+          <option value="2022">2022년</option>
+          <option value="2023">2023년</option>
+          <option value="2024">2024년</option>
+          <option value="2025">2025년</option>
+          <option value="2026">2026년</option>
+        </select>
+        <select id="redev_move_in_date_month" class="date-select">
+          <option value="">월 선택</option>
+          <option value="1">1월</option>
+          <option value="2">2월</option>
+          <option value="3">3월</option>
+          <option value="4">4월</option>
+          <option value="5">5월</option>
+          <option value="6">6월</option>
+          <option value="7">7월</option>
+          <option value="8">8월</option>
+          <option value="9">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
+        <p class="field-hint">관리처분인가 후 완공 아파트에서 2년 실거주해야 비과세 가능</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">취득 당시 분양권으로 취득한 경우</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="was_presale" id="wp1" value="해당없음"><label for="wp1"><span class="radio-dot"></span>해당 없음</label></div>
+      <div class="radio-item"><input type="radio" name="was_presale" id="wp2" value="해당" onchange="togglePresale()"><label for="wp2"><span class="radio-dot"></span>분양권 취득 후 완공</label></div>
+    </div>
+    <div class="conditional" id="cond_presale">
+      <div class="field">
+        <label class="field-label">분양권 최초 계약일</label>
+        <div style="display:flex;gap:8px;">
+        <select id="presale_date_year" class="date-select">
+          <option value="">연도 선택</option>
+          <option value="1980">1980년</option>
+          <option value="1981">1981년</option>
+          <option value="1982">1982년</option>
+          <option value="1983">1983년</option>
+          <option value="1984">1984년</option>
+          <option value="1985">1985년</option>
+          <option value="1986">1986년</option>
+          <option value="1987">1987년</option>
+          <option value="1988">1988년</option>
+          <option value="1989">1989년</option>
+          <option value="1990">1990년</option>
+          <option value="1991">1991년</option>
+          <option value="1992">1992년</option>
+          <option value="1993">1993년</option>
+          <option value="1994">1994년</option>
+          <option value="1995">1995년</option>
+          <option value="1996">1996년</option>
+          <option value="1997">1997년</option>
+          <option value="1998">1998년</option>
+          <option value="1999">1999년</option>
+          <option value="2000">2000년</option>
+          <option value="2001">2001년</option>
+          <option value="2002">2002년</option>
+          <option value="2003">2003년</option>
+          <option value="2004">2004년</option>
+          <option value="2005">2005년</option>
+          <option value="2006">2006년</option>
+          <option value="2007">2007년</option>
+          <option value="2008">2008년</option>
+          <option value="2009">2009년</option>
+          <option value="2010">2010년</option>
+          <option value="2011">2011년</option>
+          <option value="2012">2012년</option>
+          <option value="2013">2013년</option>
+          <option value="2014">2014년</option>
+          <option value="2015">2015년</option>
+          <option value="2016">2016년</option>
+          <option value="2017">2017년</option>
+          <option value="2018">2018년</option>
+          <option value="2019">2019년</option>
+          <option value="2020">2020년</option>
+          <option value="2021">2021년</option>
+          <option value="2022">2022년</option>
+          <option value="2023">2023년</option>
+          <option value="2024">2024년</option>
+          <option value="2025">2025년</option>
+          <option value="2026">2026년</option>
+        </select>
+        <select id="presale_date_month" class="date-select">
+          <option value="">월 선택</option>
+          <option value="1">1월</option>
+          <option value="2">2월</option>
+          <option value="3">3월</option>
+          <option value="4">4월</option>
+          <option value="5">5월</option>
+          <option value="6">6월</option>
+          <option value="7">7월</option>
+          <option value="8">8월</option>
+          <option value="9">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
+        <p class="field-hint">2021년 1월 이후 취득 분양권은 주택 수 포함</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-prev" onclick="prevStep(3)">← 이전</button>
+    <button class="btn btn-save" id="saveBtn3" onclick="saveAndNext(3)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 4 — 세대·거주
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-4">
+  <div class="step-title">세대 및 거주 요건</div>
+  <div class="step-desc">비과세 요건 판단에 필요한 정보입니다.</div>
+
+  <div class="notice">
+    <strong>1세대 1주택 비과세</strong>란 2년 이상 보유 (+ 거주 2년) 시 양도세가 면제되는 제도입니다.
+    세대원 전체의 주택 보유 현황이 비과세 판단에 영향을 줍니다.
+  </div>
+
+  <!-- 현재 같은 주소에 누가 살고 있나요 -->
+  <div class="field">
+    <label class="field-label required">현재 같은 주소에 누가 살고 있나요? (복수 선택 가능)</label>
+    <p class="field-hint">세대원 구성에 따라 합산 주택수가 달라집니다.</p>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="checkbox" id="hh_alone" name="hh_member" value="혼자" onchange="toggleHousehold()"><label for="hh_alone"><span class="check-box"></span>혼자 거주 (단독세대)</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_spouse" name="hh_member" value="배우자" onchange="toggleHousehold()"><label for="hh_spouse"><span class="check-box"></span>배우자</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_child_minor" name="hh_member" value="미성년자녀" onchange="toggleHousehold()"><label for="hh_child_minor"><span class="check-box"></span>미혼 자녀 (만 30세 미만 / 소득 없음)</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_child_adult" name="hh_member" value="성년자녀" onchange="toggleHousehold()"><label for="hh_child_adult"><span class="check-box"></span>미혼 자녀 (만 30세 이상 또는 소득 있음)</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_child_married" name="hh_member" value="기혼자녀" onchange="toggleHousehold()"><label for="hh_child_married"><span class="check-box"></span>기혼 자녀 (결혼한 자녀와 동거)</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_parent_old" name="hh_member" value="부모60이상" onchange="toggleHousehold()"><label for="hh_parent_old"><span class="check-box"></span>부모님 (만 60세 이상) — 동거봉양</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_parent_young" name="hh_member" value="부모60미만" onchange="toggleHousehold()"><label for="hh_parent_young"><span class="check-box"></span>부모님 (만 60세 미만)</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_sibling" name="hh_member" value="형제자매" onchange="toggleHousehold()"><label for="hh_sibling"><span class="check-box"></span>형제 / 자매</label></div>
+      <div class="radio-item"><input type="checkbox" id="hh_other" name="hh_member" value="기타동거" onchange="toggleHousehold()"><label for="hh_other"><span class="check-box"></span>기타 (친구, 지인, 사실혼 등)</label></div>
+    </div>
+  </div>
+
+  <!-- 배우자 선택 시 -->
+  <div class="conditional" id="cond_hh_spouse">
+    <div class="field">
+      <label class="field-label">배우자 상태</label>
+      <div class="radio-group col">
+        <div class="radio-item"><input type="radio" name="spouse_status" id="ss1" value="법률혼동거"><label for="ss1"><span class="radio-dot"></span>법률혼 배우자 (같은 주소)</label></div>
+        <div class="radio-item"><input type="radio" name="spouse_status" id="ss2" value="법률혼별거"><label for="ss2"><span class="radio-dot"></span>법률혼 배우자 (주소 다름 / 별거)</label></div>
+        <div class="radio-item"><input type="radio" name="spouse_status" id="ss3" value="사실혼"><label for="ss3"><span class="radio-dot"></span>사실혼 배우자</label></div>
+      </div>
+      <p class="field-hint">※ 법률혼 배우자는 주소가 달라도 같은 세대로 봅니다. 배우자 명의 주택도 합산됩니다.</p>
+    </div>
+    <div class="field">
+      <label class="field-label">배우자 명의 주택 보유 여부</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="spouse_property" id="sp1" value="없음"><label for="sp1"><span class="radio-dot"></span>없음</label></div>
+        <div class="radio-item"><input type="radio" name="spouse_property" id="sp2" value="있음" onchange="toggleSpouseProperty()"><label for="sp2"><span class="radio-dot"></span>있음</label></div>
+      </div>
+      <div class="conditional" id="cond_spouse_property">
+        <div class="field">
+          <label class="field-label">배우자 보유 주택 수</label>
+          <div class="radio-group">
+            <div class="radio-item"><input type="radio" name="spouse_houses" id="sh1" value="1채"><label for="sh1"><span class="radio-dot"></span>1채</label></div>
+            <div class="radio-item"><input type="radio" name="spouse_houses" id="sh2" value="2채이상"><label for="sh2"><span class="radio-dot"></span>2채 이상</label></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 미혼 성년 자녀 (세대분리 가능) -->
+  <div class="conditional" id="cond_hh_child_adult">
+    <div class="field">
+      <label class="field-label">성년 자녀 세대분리 여부</label>
+      <div class="radio-group col">
+        <div class="radio-item"><input type="radio" name="child_separation" id="cs1" value="분리완료"><label for="cs1"><span class="radio-dot"></span>세대분리 완료 (주민등록 따로)</label></div>
+        <div class="radio-item"><input type="radio" name="child_separation" id="cs2" value="미분리"><label for="cs2"><span class="radio-dot"></span>세대분리 안 됨 (같은 주민등록)</label></div>
+        <div class="radio-item"><input type="radio" name="child_separation" id="cs3" value="모름"><label for="cs3"><span class="radio-dot"></span>모름</label></div>
+      </div>
+      <p class="field-hint">※ 만 30세 이상 or 소득 있는 미혼 자녀는 세대분리 시 별도 세대로 인정됩니다.</p>
+    </div>
+    <div class="field">
+      <label class="field-label">해당 자녀 주택 보유 여부</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="child_adult_house" id="ca1" value="없음"><label for="ca1"><span class="radio-dot"></span>없음</label></div>
+        <div class="radio-item"><input type="radio" name="child_adult_house" id="ca2" value="있음"><label for="ca2"><span class="radio-dot"></span>있음</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 부모님 60세 이상 (동거봉양 특례) -->
+  <div class="conditional" id="cond_hh_parent_old">
+    <div class="field">
+      <label class="field-label" style="color:#c9a84c">⚡ 동거봉양 합가 특례 해당 가능</label>
+      <p class="field-hint">60세 이상 부모님을 모시기 위해 합가한 경우, 합가일로부터 5년 이내 매도 시 1주택으로 봅니다.</p>
+      <label class="field-label">합가(같이 살기 시작한) 시점</label>
+      <div style="display:flex;gap:8px;">
+        <select id="parent_merge_date_year" class="date-select">
+          <option value="">연도 선택</option>
+          <option value="1980">1980년</option>
+          <option value="1981">1981년</option>
+          <option value="1982">1982년</option>
+          <option value="1983">1983년</option>
+          <option value="1984">1984년</option>
+          <option value="1985">1985년</option>
+          <option value="1986">1986년</option>
+          <option value="1987">1987년</option>
+          <option value="1988">1988년</option>
+          <option value="1989">1989년</option>
+          <option value="1990">1990년</option>
+          <option value="1991">1991년</option>
+          <option value="1992">1992년</option>
+          <option value="1993">1993년</option>
+          <option value="1994">1994년</option>
+          <option value="1995">1995년</option>
+          <option value="1996">1996년</option>
+          <option value="1997">1997년</option>
+          <option value="1998">1998년</option>
+          <option value="1999">1999년</option>
+          <option value="2000">2000년</option>
+          <option value="2001">2001년</option>
+          <option value="2002">2002년</option>
+          <option value="2003">2003년</option>
+          <option value="2004">2004년</option>
+          <option value="2005">2005년</option>
+          <option value="2006">2006년</option>
+          <option value="2007">2007년</option>
+          <option value="2008">2008년</option>
+          <option value="2009">2009년</option>
+          <option value="2010">2010년</option>
+          <option value="2011">2011년</option>
+          <option value="2012">2012년</option>
+          <option value="2013">2013년</option>
+          <option value="2014">2014년</option>
+          <option value="2015">2015년</option>
+          <option value="2016">2016년</option>
+          <option value="2017">2017년</option>
+          <option value="2018">2018년</option>
+          <option value="2019">2019년</option>
+          <option value="2020">2020년</option>
+          <option value="2021">2021년</option>
+          <option value="2022">2022년</option>
+          <option value="2023">2023년</option>
+          <option value="2024">2024년</option>
+          <option value="2025">2025년</option>
+          <option value="2026">2026년</option>
+        </select>
+        <select id="parent_merge_date_month" class="date-select">
+          <option value="">월 선택</option>
+          <option value="1">1월</option>
+          <option value="2">2월</option>
+          <option value="3">3월</option>
+          <option value="4">4월</option>
+          <option value="5">5월</option>
+          <option value="6">6월</option>
+          <option value="7">7월</option>
+          <option value="8">8월</option>
+          <option value="9">9월</option>
+          <option value="10">10월</option>
+          <option value="11">11월</option>
+          <option value="12">12월</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="field-label">부모님 명의 주택 보유 여부</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="parent_house" id="ph1" value="없음"><label for="ph1"><span class="radio-dot"></span>없음</label></div>
+        <div class="radio-item"><input type="radio" name="parent_house" id="ph2" value="있음"><label for="ph2"><span class="radio-dot"></span>있음</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 부모님 60세 미만 -->
+  <div class="conditional" id="cond_hh_parent_young">
+    <div class="field">
+      <label class="field-label">부모님 명의 주택 보유 여부</label>
+      <div class="radio-group">
+        <div class="radio-item"><input type="radio" name="parent_young_house" id="pyh1" value="없음"><label for="pyh1"><span class="radio-dot"></span>없음</label></div>
+        <div class="radio-item"><input type="radio" name="parent_young_house" id="pyh2" value="있음"><label for="pyh2"><span class="radio-dot"></span>있음 (주택수 합산됨)</label></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 기타 동거인 -->
+  <div class="conditional" id="cond_hh_other">
+    <div class="field">
+      <p class="field-hint">※ 친구·지인·사실혼 배우자는 법적으로 별도 세대입니다. 주택수 합산되지 않습니다.<br>단, 사실혼 배우자의 경우 세무사 확인을 권장합니다.</p>
+    </div>
+  </div>
+
+  <!-- 1세대 1주택 비과세 요건 -->
+  <div class="field">
+    <label class="field-label required">1세대 1주택 비과세 요건 (본인 판단)</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="nontax_eligible" id="ne1" value="충족"><label for="ne1"><span class="radio-dot"></span>충족한다고 생각함</label></div>
+      <div class="radio-item"><input type="radio" name="nontax_eligible" id="ne2" value="미충족"><label for="ne2"><span class="radio-dot"></span>충족하지 못함 (다주택 등)</label></div>
+      <div class="radio-item"><input type="radio" name="nontax_eligible" id="ne3" value="모름"><label for="ne3"><span class="radio-dot"></span>잘 모름 — 자동 판단 요청</label></div>
+    </div>
+    <p class="field-hint">잘 모르셔도 됩니다. 입력하신 정보로 자동 판단합니다.</p>
+  </div>
+
+  <div class="field">
+    <label class="field-label">고가주택 여부 (시세 12억 초과)</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="high_value" id="hv1" value="12억이하"><label for="hv1"><span class="radio-dot"></span>12억 이하</label></div>
+      <div class="radio-item"><input type="radio" name="high_value" id="hv2" value="12억초과"><label for="hv2"><span class="radio-dot"></span>12억 초과</label></div>
+      <div class="radio-item"><input type="radio" name="high_value" id="hv3" value="모름"><label for="hv3"><span class="radio-dot"></span>모름</label></div>
+    </div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-prev" onclick="prevStep(4)">← 이전</button>
+    <button class="btn btn-save" id="saveBtn4" onclick="saveAndNext(4)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 5 — 특수 상황
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-5">
+  <div class="step-title">특수 상황</div>
+  <div class="step-desc">해당하는 항목만 체크하세요. 없으면 모두 건너뛰어도 됩니다.</div>
+
+  <div class="field">
+    <label class="field-label">증여 이력 (최근 10년 이내)</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="gift_history" id="gh1" value="없음"><label for="gh1"><span class="radio-dot"></span>없음</label></div>
+      <div class="radio-item"><input type="radio" name="gift_history" id="gh2" value="있음" onchange="toggleGiftHistory()"><label for="gh2"><span class="radio-dot"></span>있음</label></div>
+    </div>
+    <div class="conditional" id="cond_gift_history">
+      <div class="field">
+        <label class="field-label">기증여 합계 금액 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="gift_total" placeholder="예: 50" oninput="showMoneyPreview('gift_total')">
+    <div id="gift_total_preview" class="money-preview"></div>
+        <p class="field-hint">증여세 합산과세 적용 (10년 이내 합산)</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">부담부증여 고려 여부</label>
+    <div class="radio-group">
+      <div class="radio-item"><input type="radio" name="burden_gift" id="bg1" value="아니오"><label for="bg1"><span class="radio-dot"></span>아니오</label></div>
+      <div class="radio-item"><input type="radio" name="burden_gift" id="bg2" value="고려중"><label for="bg2"><span class="radio-dot"></span>고려 중 (채무 포함 증여)</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">상속 관련 사항</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="inheritance" id="inh1" value="해당없음"><label for="inh1"><span class="radio-dot"></span>해당 없음</label></div>
+      <div class="radio-item"><input type="radio" name="inheritance" id="inh2" value="상속예정" onchange="toggleInheritance()"><label for="inh2"><span class="radio-dot"></span>향후 상속 예정 (부모님 부동산)</label></div>
+      <div class="radio-item"><input type="radio" name="inheritance" id="inh3" value="상속받음" onchange="toggleInheritance()"><label for="inh3"><span class="radio-dot"></span>이미 상속 받음</label></div>
+    </div>
+    <div class="conditional" id="cond_inheritance">
+      <div class="field">
+        <label class="field-label">예상 상속 자산 규모 <span class="unit-badge">단위: 백만원</span></label>
+        <input type="text" id="inheritance_value" placeholder="예: 2000" oninput="showMoneyPreview('inheritance_value')">
+    <div id="inheritance_value_preview" class="money-preview"></div>
+      </div>
+      <div class="field">
+        <label class="field-label">상속인 수</label>
+        <input type="number" id="heir_count" placeholder="예: 3">
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">증여 대상 예정자 (복수 선택 가능)</label>
+    <div class="check-group">
+      <div class="check-item"><input type="checkbox" id="gift_to_spouse" value="배우자"><label for="gift_to_spouse"><span class="check-dot"></span>배우자</label></div>
+      <div class="check-item"><input type="checkbox" id="gift_to_child" value="자녀"><label for="gift_to_child"><span class="check-dot"></span>자녀</label></div>
+      <div class="check-item"><input type="checkbox" id="gift_to_other" value="기타"><label for="gift_to_other"><span class="check-dot"></span>기타 친족</label></div>
+      <div class="check-item"><input type="checkbox" id="gift_to_none" value="없음"><label for="gift_to_none"><span class="check-dot"></span>증여 고려 안 함</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">기타 특수 사항 (자유 입력)</label>
+    <textarea id="special_note" placeholder="예: 이혼 예정으로 재산분할 고려 중, 미국 시민권자로 해외거주 중, 농지 보유, 상가겸용주택 등"></textarea>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-prev" onclick="prevStep(5)">← 이전</button>
+    <button class="btn btn-save" id="saveBtn5" onclick="saveAndNext(5)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 6 — 원하는 결과
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-6">
+  <div class="step-title">원하는 결과</div>
+  <div class="step-desc">어떤 시나리오를 분석받고 싶으신가요? 복수 선택 가능합니다.</div>
+
+  <div class="field">
+    <label class="field-label required">분석 받고 싶은 시나리오 (복수 선택)</label>
+    <div class="check-group col">
+      <div class="check-item"><input type="checkbox" id="sc_sell" value="매도"><label for="sc_sell"><span class="check-dot"></span>지금 팔기 — 양도세·실수령액 계산</label></div>
+      <div class="check-item"><input type="checkbox" id="sc_hold" value="보유"><label for="sc_hold"><span class="check-dot"></span>계속 버티기 — 보유세 부담·기회비용</label></div>
+      <div class="check-item"><input type="checkbox" id="sc_timing" value="타이밍"><label for="sc_timing"><span class="check-dot"></span>매도 타이밍 최적화 — 지금/1년/3년/5년 후 비교</label></div>
+      <div class="check-item"><input type="checkbox" id="sc_gift" value="증여"><label for="sc_gift"><span class="check-dot"></span>증여 시나리오 — 증여세·수증자 부담</label></div>
+      <div class="check-item"><input type="checkbox" id="sc_inherit" value="상속"><label for="sc_inherit"><span class="check-dot"></span>상속 시나리오 — 증여 vs 상속 비교</label></div>
+      <div class="check-item"><input type="checkbox" id="sc_redev" value="재개발"><label for="sc_redev"><span class="check-dot"></span>재개발/재건축 수익 시뮬레이션</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">가장 큰 고민</label>
+    <div class="radio-group col">
+      <div class="radio-item"><input type="radio" name="main_concern" id="mc1" value="세금최소화"><label for="mc1"><span class="radio-dot"></span>세금을 최대한 줄이고 싶다</label></div>
+      <div class="radio-item"><input type="radio" name="main_concern" id="mc2" value="현금확보"><label for="mc2"><span class="radio-dot"></span>현금을 최대한 확보하고 싶다</label></div>
+      <div class="radio-item"><input type="radio" name="main_concern" id="mc3" value="자녀이전"><label for="mc3"><span class="radio-dot"></span>자녀에게 효율적으로 넘기고 싶다</label></div>
+      <div class="radio-item"><input type="radio" name="main_concern" id="mc4" value="타이밍판단"><label for="mc4"><span class="radio-dot"></span>지금 팔아야 할지 버텨야 할지 모르겠다</label></div>
+      <div class="radio-item"><input type="radio" name="main_concern" id="mc5" value="종합검토"><label for="mc5"><span class="radio-dot"></span>모든 선택지를 종합적으로 검토하고 싶다</label></div>
+    </div>
+  </div>
+
+  <div class="field">
+    <label class="field-label">추가로 알고 싶은 것 (자유 입력)</label>
+    <textarea id="extra_question" placeholder="구체적인 상황이나 궁금한 점을 자유롭게 적어주세요."></textarea>
+  </div>
+
+  <div class="field">
+    <label class="field-label required">결정 시급성</label>
+    <div class="range-wrap">
+      <span style="font-size:12px;color:var(--dim);">여유있음</span>
+      <input type="range" id="urgency" min="1" max="5" value="3" oninput="updateUrgency(this.value)">
+      <span style="font-size:12px;color:var(--dim);">매우 급함</span>
+      <div class="range-val" id="urgency_val">3</div>
+    </div>
+    <div id="urgency_label" style="font-size:12px;color:var(--gold);margin-top:8px;"></div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn btn-prev" onclick="prevStep(6)">← 이전</button>
+    <button class="btn btn-save" id="saveBtn6" onclick="saveAndNext(6)">저장하고 다음 →</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     STEP 7 — 연락처
+════════════════════════════════════════════ -->
+<div class="step-section" id="step-7">
+  <div class="step-title">리포트 수령 정보</div>
+  <div class="step-desc">리포트는 입력하신 이메일로 발송됩니다.</div>
+
+  <div class="notice">
+    <strong>발송 안내:</strong> 리포트는 정확한 분석 완료 후 <strong>다음날 중으로</strong> 이메일로 발송됩니다.<br>
+    본 리포트는 AI 세금 시뮬레이션입니다. 중요한 결정은 반드시 세무사와 상담하십시오.
+  </div>
+
+  <div class="field">
+    <label class="field-label required">이름</label>
+    <input type="text" id="user_name" placeholder="홍길동">
+  </div>
+
+  <div class="field">
+    <label class="field-label required">이메일</label>
+    <input type="email" id="user_email" placeholder="example@email.com">
+    <p class="field-hint">리포트 PDF가 이 주소로 발송됩니다</p>
+  </div>
+
+  <div class="field">
+    <label class="field-label">연락처 (선택)</label>
+    <input type="text" id="user_phone" placeholder="010-0000-0000">
+  </div>
+
+  <div class="field">
+    <label class="field-label required">면책 조항 동의</label>
+    <div class="check-group col">
+      <div class="check-item">
+        <input type="checkbox" id="agree_disclaimer">
+        <label for="agree_disclaimer">
+          <span class="check-dot"></span>
+          본 리포트는 AI 세금 시뮬레이션 도구이며 법적 세무 조언이 아님을 이해합니다. 중요한 결정은 공인 세무사와 상담할 것을 권고합니다.
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="field">
+    <button class="btn btn-submit" id="submitBtn" onclick="submitForm()" disabled>
+      결제하고 리포트 신청하기 — 149,000원
+    </button>
+    <p style="text-align:center;font-size:12px;color:var(--dim);margin-top:16px;">
+      안전한 결제 후 신청이 완료됩니다
+    </p>
+  </div>
+
+  <div class="btn-row" style="border:none;padding-top:0;">
+    <button class="btn btn-prev" onclick="prevStep(7)">← 이전</button>
+    <div></div>
+  </div>
+</div>
+
+<!-- SUCCESS -->
+<div class="success-screen" id="successScreen">
+  <div class="success-icon">✅</div>
+  <div class="success-title">신청이 완료되었습니다</div>
+  <p class="success-desc">
+    리포트는 정확한 분석 완료 후 내일 중으로<br>
+    <strong id="success_email" style="color:var(--gold)"></strong><br>
+    으로 발송됩니다.<br><br>
+    <span style="color:var(--gold)">한 채가 수억입니다.<br>그 결정에 최선을 다하겠습니다.</span>
+  </p>
+</div>
+
+</div><!-- /form-wrap -->
+
+<script>
+let currentStep = 1;
+const totalSteps = 7;
+
+// 페이지 로드 시 저장된 데이터 복원
+window.addEventListener('DOMContentLoaded', () => {
+  loadSaved();
+  initMoneyHints();
+});
+
+// ── 세대 구성 체크박스 토글
+function toggleHousehold() {
+  const checked = [...document.querySelectorAll('input[name="hh_member"]:checked')].map(el => el.value);
+  const show = (id, condition) => document.getElementById(id)?.classList.toggle('show', condition);
+
+  // 혼자 선택 시 다른 항목 해제
+  if (document.getElementById('hh_alone')?.checked) {
+    document.querySelectorAll('input[name="hh_member"]').forEach(el => {
+      if (el.value !== '혼자') el.checked = false;
+    });
+  } else {
+    document.getElementById('hh_alone').checked = false;
+  }
+
+  const has = v => checked.includes(v);
+  show('cond_hh_spouse',        has('배우자'));
+  show('cond_hh_child_adult',   has('성년자녀'));
+  show('cond_hh_parent_old',    has('부모60이상'));
+  show('cond_hh_parent_young',  has('부모60미만'));
+  show('cond_hh_other',         has('기타동거'));
+}
+
+// ── 단계별 자동저장 (sessionStorage)
+const SAVE_KEY = 'pandan_form_v2';
+
+function saveStep(step) {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SAVE_KEY) || '{}');
+    const data = collectData();
+    saved['step_' + step] = data;
+    saved['last_step'] = step;
+    saved['saved_at'] = new Date().toISOString();
+    sessionStorage.setItem(SAVE_KEY, JSON.stringify(saved));
+    console.log('[판단] 자동저장 완료 — step', step);
+  } catch(e) {
+    console.warn('[판단] 저장 실패:', e);
+  }
+}
+
+function loadSaved() {
+  try {
+    const saved = JSON.parse(sessionStorage.getItem(SAVE_KEY) || '{}');
+    if (!saved.last_step) return;
+    // 마지막 저장 데이터로 복원
+    const data = saved['step_' + saved.last_step] || {};
+    restoreForm(data);
+    console.log('[판단] 저장된 데이터 복원 — step', saved.last_step);
+  } catch(e) {
+    console.warn('[판단] 복원 실패:', e);
+  }
+}
+
+function restoreForm(data) {
+  // text/number 입력값 복원
+  const fields = ['location','current_value','acquisition_price','acquisition_date',
+    'other_houses','debt_amount','gift_acq_value','redev_original_price',
+    'redev_premium_amount','redev_allotment_price','redev_assessed_value',
+    'redev_mgmt_date','redev_move_in_date','presale_date','parent_merge_date',
+    'gift_total','inheritance_value','heir_count','main_concern','extra_question',
+    'special_note','user_name','user_email','user_phone'];
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el && data[id]) {
+      el.value = data[id];
+      if (el.getAttribute('oninput')) showMoneyPreview(id);
+    }
+  });
+  // radio 복원
+  Object.keys(data).forEach(key => {
+    const val = data[key];
+    if (typeof val === 'string' && val) {
+      const el = document.querySelector(`input[name="${key}"][value="${val}"]`);
+      if (el) { el.checked = true; el.dispatchEvent(new Event('change')); }
+    }
+  });
+  // checkbox 복원
+  if (Array.isArray(data.household_members)) {
+    data.household_members.forEach(val => {
+      const el = document.querySelector(`input[name="hh_member"][value="${val}"]`);
+      if (el) { el.checked = true; }
+    });
+    toggleHousehold();
+  }
+  // 시나리오 체크박스
+  if (Array.isArray(data.scenarios)) {
+    data.scenarios.forEach(val => {
+      const el = document.querySelector(`input[name="scenarios"][value="${val}"]`);
+      if (el) el.checked = true;
+    });
+  }
+}
+  // done 단계(이미 완료)는 자유롭게 이동 가능, 아직 안 간 앞 단계는 금지
+  const el = document.querySelector(`.progress-step[data-step="${n}"]`);
+  if (n > currentStep && !el?.classList.contains('done')) return;
+  document.getElementById(`step-${currentStep}`).classList.remove('active');
+  currentStep = n;
+  document.getElementById(`step-${currentStep}`).classList.add('active');
+  // 이동한 단계 저장버튼 수정가능 상태로
+  const btn = document.getElementById('saveBtn' + currentStep);
+  if (btn) { btn.classList.remove('saved'); btn.textContent = '저장하고 다음 →'; }
+  updateProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function nextStep(from) {
+  if (!validateStep(from)) return;
+  saveStep(from);  // 단계 넘어갈 때 자동저장
+  showSaveToast(from);
+  document.getElementById(`step-${from}`).classList.remove('active');
+  currentStep = from + 1;
+  document.getElementById(`step-${currentStep}`).classList.add('active');
+  updateProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function showSaveToast(step) {
+  let toast = document.getElementById('saveToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'saveToast';
+    toast.style.cssText = `
+      position:fixed; bottom:24px; right:24px; z-index:9999;
+      background:#1a3a1a; color:#7fff7f; border:1px solid #3a7a3a;
+      padding:10px 18px; border-radius:8px; font-size:14px;
+      opacity:0; transition:opacity .3s; pointer-events:none;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.textContent = `✓ ${step}단계 저장됨`;
+  toast.style.opacity = '1';
+  setTimeout(() => toast.style.opacity = '0', 2000);
+}
+
+function prevStep(from) {
+  document.getElementById(`step-${from}`).classList.remove('active');
+  currentStep = from - 1;
+  document.getElementById(`step-${currentStep}`).classList.add('active');
+  // 돌아온 단계 저장버튼 — 수정 가능 상태로
+  const btn = document.getElementById('saveBtn' + currentStep);
+  if (btn) {
+    btn.classList.remove('saved');
+    btn.textContent = '저장하고 다음 →';
+  }
+  updateProgress();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function updateProgress() {
+  for (let i = 1; i <= totalSteps; i++) {
+    const el = document.querySelector(`.progress-step[data-step="${i}"]`);
+    const line = document.getElementById(`line-${i}`);
+    el.classList.remove('active','done');
+    if (i < currentStep) { el.classList.add('done'); if(line) line.classList.add('done'); }
+    else if (i === currentStep) { el.classList.add('active'); if(line) line.classList.remove('done'); }
+    else { if(line) line.classList.remove('done'); }
+  }
+}
+
+// ── 유효성 검사
+function validateStep(step) {
+  let valid = true;
+  if (step === 1) {
+    if (!document.querySelector('input[name="property_type"]:checked')) { alert('부동산 유형을 선택해주세요.'); return false; }
+    if (!document.getElementById('location').value.trim()) { alert('소재지를 입력해주세요.'); return false; }
+    if (!document.getElementById('current_value').value) { alert('현재 시장가치 <span class="unit-badge">단위: 백만원</span>를 입력해주세요.'); return false; }
+    if (!document.getElementById('acquisition_price').value) { alert('취득가를 입력해주세요.'); return false; }
+    if (!document.getElementById('acquisition_date_year')?.value || !document.getElementById('acquisition_date_month')?.value) { alert('취득 연월을 선택해주세요.'); return false; }
+    if (!document.querySelector('input[name="total_houses"]:checked')) { alert('보유 주택 수를 선택해주세요.'); return false; }
+  }
+  if (step === 6) {
+    const checked = document.querySelectorAll('.check-group input[type="checkbox"]:checked');
+    if (document.querySelectorAll('#sc_sell:checked, #sc_hold:checked, #sc_timing:checked, #sc_gift:checked, #sc_inherit:checked, #sc_redev:checked').length === 0) {
+      alert('분석 받고 싶은 시나리오를 하나 이상 선택해주세요.'); return false;
+    }
+    if (!document.querySelector('input[name="main_concern"]:checked')) { alert('가장 큰 고민을 선택해주세요.'); return false; }
+  }
+  if (step === 7) {
+    // submit 버튼 활성화는 별도 처리
+  }
+  return valid;
+}
+
+// ── 조건부 표시
+function toggleMultiHouse() {
+  const val = document.querySelector('input[name="total_houses"]:checked')?.value;
+  document.getElementById('cond_multi_house').classList.toggle('show', val === '2' || val === '3');
+}
+function toggleDebt() {
+  const val = document.querySelector('input[name="has_debt"]:checked')?.value;
+  document.getElementById('cond_debt').classList.toggle('show', val === '있음');
+}
+function toggleRental() {
+  const val = document.querySelector('input[name="rental_business"]:checked')?.value;
+  document.getElementById('cond_rental').classList.toggle('show', val === '등록');
+}
+function toggleGiftAcq() {
+  const val = document.querySelector('input[name="acquisition_method"]:checked')?.value;
+  document.getElementById('cond_gift_acq').classList.toggle('show', val === '증여' || val === '상속');
+}
+function toggleRedev() {
+  const val = document.querySelector('input[name="redevelopment"]:checked')?.value;
+  const show = val && val !== '해당없음';
+  document.getElementById('cond_redev').classList.toggle('show', show);
+  // 완공후입주 선택 시 입주일 필드 표시
+  const moveInField = document.getElementById('field_redev_move_in');
+  if (moveInField) moveInField.style.display = (val === '완공후입주') ? 'block' : 'none';
+}
+function toggleRedevPremium() {
+  const val = document.querySelector('input[name="redev_premium"]:checked')?.value;
+  document.getElementById('cond_redev_premium').classList.toggle('show', val === '있음');
+}
+function togglePresale() {
+  const val = document.querySelector('input[name="was_presale"]:checked')?.value;
+  document.getElementById('cond_presale').classList.toggle('show', val === '해당');
+}
+function toggleSpouseProperty() {
+  const val = document.querySelector('input[name="spouse_property"]:checked')?.value;
+  document.getElementById('cond_spouse_property').classList.toggle('show', val === '있음');
+}
+function toggleGiftHistory() {
+  const val = document.querySelector('input[name="gift_history"]:checked')?.value;
+  document.getElementById('cond_gift_history').classList.toggle('show', val === '있음');
+}
+function toggleInheritance() {
+  const val = document.querySelector('input[name="inheritance"]:checked')?.value;
+  document.getElementById('cond_inheritance').classList.toggle('show', val !== '해당없음' && val);
+}
+
+// ── 긴급도 슬라이더
+const urgencyLabels = {1:'여유있게 검토 중',2:'조만간 결정 예정',3:'올해 안에는 결정해야 함',4:'빠른 결정 필요',5:'매우 급함 (세금 데드라인 등)'};
+function updateUrgency(val) {
+  document.getElementById('urgency_val').textContent = val;
+  document.getElementById('urgency_label').textContent = urgencyLabels[val] || '';
+}
+updateUrgency(3);
+
+// ── 제출 버튼 활성화
+document.getElementById('agree_disclaimer').addEventListener('change', function() {
+  const name = document.getElementById('user_name').value.trim();
+  const email = document.getElementById('user_email').value.trim();
+  document.getElementById('submitBtn').disabled = !(this.checked && name && email);
+});
+['user_name','user_email'].forEach(id => {
+  document.getElementById(id).addEventListener('input', function() {
+    const agreed = document.getElementById('agree_disclaimer').checked;
+    const name = document.getElementById('user_name').value.trim();
+    const email = document.getElementById('user_email').value.trim();
+    document.getElementById('submitBtn').disabled = !(agreed && name && email);
+  });
+});
+
+// ── 데이터 수집
+// ── 금액 파싱: 백만원 단위 입력 → 만원 단위 숫자로 변환
+// 입력: "16" → 16억(160,000만원), "16.5" → 16억5천, "1600" → 16억
+// 단위: 백만원 (예: 16 = 16억, 1.6 = 1억6천만)
+function parseMoney(str) {
+  if (!str) return '';
+  str = str.trim().replace(/,/g, '').replace(/\s/g, '');
+  // 순수 숫자(소수 포함) → 백만원 단위로 해석 → 만원으로 변환
+  if (/^\d+(\.\d+)?$/.test(str)) {
+    return String(Math.round(parseFloat(str) * 100)); // 백만원 × 100 = 만원
+  }
+  // 한글 표기 (억/천만/만 등) → 만원으로 변환
+  let total = 0;
+  const jo = str.match(/(\d+\.?\d*)조/);
+  if (jo) total += parseFloat(jo[1]) * 1_000_000;
+  const eok = str.match(/(\d+\.?\d*)억/);
+  if (eok) total += parseFloat(eok[1]) * 10_000;
+  const chunman = str.match(/(\d+\.?\d*)천만/);
+  if (chunman) total += parseFloat(chunman[1]) * 1_000;
+  else {
+    const chun = str.match(/억(\d+\.?\d*)천(?!만)/);
+    if (chun) total += parseFloat(chun[1]) * 1_000;
+    else {
+      const chunOnly = str.match(/^(\d+\.?\d*)천(?!만)/);
+      if (chunOnly) total += parseFloat(chunOnly[1]) * 1_000;
+    }
+  }
+  const man = str.match(/(\d+\.?\d*)만/);
+  if (man) total += parseFloat(man[1]);
+  return total > 0 ? String(Math.round(total)) : str;
+}
+
+// 백만원 단위 → 읽기 쉬운 한글 금액
+function formatWon(manwon) {
+  // 입력: 만원 단위 숫자 → "16억원", "8억 5천만원" 형태 출력
+  if (!manwon || isNaN(manwon) || manwon <= 0) return '';
+  manwon = Math.round(manwon);
+  const eok = Math.floor(manwon / 10000);
+  const remain = manwon % 10000;
+  const chun = Math.floor(remain / 1000);
+  const baek = Math.floor((remain % 1000) / 100);
+  const ship = remain % 100;
+
+  let result = '';
+  if (eok > 0) result += eok + '억 ';
+  if (chun > 0) result += chun + '천';
+  if (baek > 0) result += baek + '백';
+  if (ship > 0) result += ship + '만';
+  return result.trim() + '원';
+}
+
+// 금액 필드 실시간 미리보기
+function showMoneyPreview(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const preview = document.getElementById(id + '_preview');
+  if (!preview) return;
+  const raw = el.value.trim();
+  if (!raw) {
+    preview.textContent = '숫자를 입력하면 금액이 표시됩니다';
+    preview.style.color = '#444';
+    return;
+  }
+  const manwon = parseInt(parseMoney(raw));
+  if (manwon > 0) {
+    preview.textContent = '→ ' + formatWon(manwon);
+    preview.style.color = 'var(--gold)';
+    preview.style.fontSize = '19px';
+  } else {
+    preview.textContent = '숫자를 입력해주세요';
+    preview.style.color = '#e05c5c';
+    preview.style.fontSize = '14px';
+  }
+}
+
+// 모든 금액 필드 초기 힌트 표시
+function initMoneyPreviews() {
+  const ids = ['current_value','acquisition_price','debt_amount','gift_acq_value',
+    'redev_original_price','redev_premium_amount','redev_allotment_price',
+    'redev_assessed_value','gift_total','inheritance_value'];
+  ids.forEach(id => {
+    const preview = document.getElementById(id + '_preview');
+    if (preview && !preview.textContent) {
+      preview.textContent = '백만원 단위 — 예) 1600 = 16억';
+      preview.style.color = '#444';
+    }
+  });
+}
+
+// 저장하고 다음 단계로
+function saveAndNext(from) {
+  if (!validateStep(from)) return;
+  saveStep(from);
+  const btn = document.getElementById('saveBtn' + from);
+  if (btn) {
+    btn.classList.add('saved');
+    btn.textContent = '다음 단계로 →';
+  }
+  setTimeout(() => {
+    document.getElementById(`step-${from}`).classList.remove('active');
+    currentStep = from + 1;
+    document.getElementById(`step-${currentStep}`).classList.add('active');
+    updateProgress();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }, 300);
+}
+
+// 금액 필드 초기 힌트 표시
+function initMoneyHints() {
+  ['current_value','acquisition_price','debt_amount','gift_acq_value',
+   'redev_original_price','redev_premium_amount','redev_allotment_price',
+   'redev_assessed_value','gift_total','inheritance_value'].forEach(id => {
+    const p = document.getElementById(id + '_preview');
+    const el = document.getElementById(id);
+    if (!p) return;
+    if (el && el.value) {
+      showMoneyPreview(id);
+    } else {
+      p.textContent = '숫자를 입력하면 금액이 표시됩니다';
+      p.style.color = '#444';
+    }
+  });
+}
+
+function collectData() {
+  const r = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+  const v = (id) => document.getElementById(id)?.value || '';
+  const m = (id) => parseMoney(document.getElementById(id)?.value || '');
+  const d = (id) => {  // 날짜 드롭다운: year + month → "2018년 3월"
+    const y = document.getElementById(id + '_year')?.value;
+    const mo = document.getElementById(id + '_month')?.value;
+    return (y && mo) ? `${y}년 ${mo}월` : '';
+  };
+  const checks = (ids) => ids.filter(id => document.getElementById(id)?.checked).map(id => document.getElementById(id).value);
+
+  return {
+    // 기본
+    name: v('user_name'),
+    email: v('user_email'),
+    phone: v('user_phone'),
+    // 1단계
+    property_type: r('property_type'),
+    location: v('location'),
+    current_value: m('current_value'),
+    acquisition_price: m('acquisition_price'),
+    acquisition_date: d('acquisition_date'),
+    total_houses: r('total_houses'),
+    other_houses: v('other_houses'),
+    temp_2house: r('temp_2house'),
+    joint_ownership: r('joint_ownership'),
+    // 2단계
+    usage: r('usage'),
+    residence_years: r('residence_years'),
+    has_debt: r('has_debt'),
+    debt_amount: m('debt_amount'),
+    rental_business: r('rental_business'),
+    rental_obligation: r('rental_obligation'),
+    rental_type: r('rental_type'),
+    corp_owned: r('corp_owned'),
+    // 3단계
+    acquisition_method: r('acquisition_method'),
+    gift_acq_value: m('gift_acq_value'),
+    acq_regulated: r('acq_regulated'),
+    curr_regulated: r('curr_regulated'),
+    redevelopment: r('redevelopment'),
+    redev_original_price: m('redev_original_price'),
+    redev_premium: r('redev_premium'),
+    redev_premium_amount: m('redev_premium_amount'),
+    redev_allotment_price: m('redev_allotment_price'),
+    redev_assessed_value: m('redev_assessed_value'),
+    redev_mgmt_date: d('redev_mgmt_date'),
+    redev_move_in_date: d('redev_move_in_date'),
+    redev_contribution: r('redev_contribution'),
+    was_presale: r('was_presale'),
+    presale_date: d('presale_date'),
+    // 4단계 — 세대 구성 (체크박스 복수선택)
+    household_members: [...document.querySelectorAll('input[name="hh_member"]:checked')].map(el => el.value),
+    household: [...document.querySelectorAll('input[name="hh_member"]:checked')].map(el => el.value).join(','),
+    spouse_status: r('spouse_status'),
+    spouse_property: r('spouse_property'),
+    spouse_houses: r('spouse_houses'),
+    child_separation: r('child_separation'),
+    child_adult_house: r('child_adult_house'),
+    parent_merge_date: d('parent_merge_date'),
+    parent_house: r('parent_house'),
+    parent_young_house: r('parent_young_house'),
+    nontax_eligible: r('nontax_eligible'),
+    high_value: r('high_value'),
+    // 5단계
+    gift_history: r('gift_history'),
+    gift_total: m('gift_total'),
+    burden_gift: r('burden_gift'),
+    inheritance: r('inheritance'),
+    inheritance_value: m('inheritance_value'),
+    heir_count: v('heir_count'),
+    gift_targets: checks(['gift_to_spouse','gift_to_child','gift_to_other','gift_to_none']),
+    special_note: v('special_note'),
+    // 6단계
+    scenarios: checks(['sc_sell','sc_hold','sc_timing','sc_gift','sc_inherit','sc_redev']),
+    main_concern: r('main_concern'),
+    extra_question: v('extra_question'),
+    urgency: v('urgency'),
+  };
+}
+
+// ── 제출
+async function submitForm() {
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ 리포트 생성 요청 중...';
+
+  const data = collectData();
+  console.log('[판단] 전송 데이터:', data);
+
+  try {
+    const res = await fetch('https://pandan-production.up.railway.app/generate', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(data)
+    });
+
+    console.log('[판단] 서버 응답 상태:', res.status);
+    const json = await res.json();
+    console.log('[판단] 서버 응답 내용:', json);
+
+    if (res.ok || res.status === 202) {
+      // 성공 — 폼 숨기고 완료 화면
+      document.querySelectorAll('.step').forEach(el => el.style.display = 'none');
+      document.querySelector('.progress-bar')?.style && (document.querySelector('.progress-bar').style.display = 'none');
+      const success = document.getElementById('successScreen');
+      success.style.display = 'block';
+      success.style.opacity = '1';
+      success.classList.add('show');
+      // 이메일 주소 표시
+      const emailEl = document.getElementById('success_email');
+      if (emailEl) emailEl.textContent = data.email;
+      window.scrollTo({top: 0, behavior: 'smooth'});
+    } else {
+      const msg = json.error || json.message || '오류가 발생했습니다. 다시 시도해주세요.';
+      showError(msg);
+      btn.disabled = false;
+      btn.textContent = '리포트 신청하기 — 149,000원';
+    }
+  } catch(e) {
+    console.error('[판단] fetch 오류:', e);
+    showError('서버 연결 오류가 발생했습니다. 잠시 후 다시 시도해주세요.\n\n(' + e.message + ')');
+    btn.disabled = false;
+    btn.textContent = '리포트 신청하기 — 149,000원';
+  }
+}
+
+function showError(msg) {
+  let el = document.getElementById('errorMsg');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'errorMsg';
+    el.style.cssText = 'background:#5c1a1a;color:#fff;padding:16px 20px;border-radius:8px;margin:16px 0;font-size:15px;line-height:1.6;';
+    document.getElementById('submitBtn').parentNode.insertBefore(el, document.getElementById('submitBtn'));
+  }
+  el.textContent = '⚠️ ' + msg;
+  el.scrollIntoView({behavior:'smooth'});
+}
+</script>
+</body>
+</html>
